@@ -1,0 +1,200 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Design System: Color Tokens */
+:root {
+  /* Violet Night Theme (Default) */
+  --bg: #0a0a0a;
+  --panel: #121212;
+  --text: #f5f5f5;
+  --muted: #a3a3a3;
+  --faint: rgba(255, 255, 255, 0.08);
+  --accent: #8b5cf6;
+  --accent-2: #a78bfa;
+  
+  /* Typography Scale */
+  --font-display-xl: 3.5rem;
+  --font-display-l: 2.5rem;
+  --font-h3: 1.5rem;
+  --font-body: 1rem;
+  --font-small: 0.875rem;
+  --font-mono-small: 0.8125rem;
+  
+  /* Spacing (8px base unit) */
+  --space-unit: 8px;
+  
+  /* Radius */
+  --radius: 0.5rem;
+}
+
+html[data-theme="ice-blue"],
+[data-theme="ice-blue"] {
+  /* Ice Blue Theme */
+  --bg: #0a0f1a;
+  --panel: #121a28;
+  --text: #f0f4f8;
+  --muted: #94a3b8;
+  --faint: rgba(255, 255, 255, 0.08);
+  --accent: #60a5fa;
+  --accent-2: #93c5fd;
+}
+
+/* Background Patterns */
+@layer base {
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+    position: relative;
+  }
+  
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 1px 1px, var(--faint) 1px, transparent 0);
+    background-size: 24px 24px;
+    pointer-events: none;
+    opacity: 0.3;
+    z-index: 0;
+  }
+  
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(ellipse at top, rgba(var(--accent-rgb, 139, 92, 246), 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom, rgba(var(--accent-rgb, 139, 92, 246), 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+[data-theme="ice-blue"] body::after {
+  background: 
+    radial-gradient(ellipse at top, rgba(96, 165, 250, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom, rgba(96, 165, 250, 0.03) 0%, transparent 50%);
+}
+
+/* Typography System */
+@layer base {
+  h1, .display-xl {
+    font-size: var(--font-display-xl);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+  
+  h2, .display-l {
+    font-size: var(--font-display-l);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+  
+  h3, .h3 {
+    font-size: var(--font-h3);
+    line-height: 1.3;
+    font-weight: 600;
+  }
+  
+  body, .body {
+    font-size: var(--font-body);
+    line-height: 1.6;
+  }
+  
+  .small {
+    font-size: var(--font-small);
+    line-height: 1.5;
+  }
+  
+  .mono-small {
+    font-family: var(--font-geist-mono), monospace;
+    font-size: var(--font-mono-small);
+    line-height: 1.4;
+  }
+}
+
+/* Layout Primitives */
+@layer utilities {
+  .container-custom {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  
+  @media (min-width: 768px) {
+    .container-custom {
+      padding-left: 48px;
+      padding-right: 48px;
+    }
+  }
+  
+  .section {
+    padding-top: calc(var(--space-unit) * 8);
+    padding-bottom: calc(var(--space-unit) * 8);
+  }
+  
+  .stack {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .stack > * + * {
+    margin-top: calc(var(--space-unit) * 2);
+  }
+  
+  .cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--space-unit) * 2);
+    align-items: center;
+  }
+  
+  .divider {
+    height: 1px;
+    background: var(--faint);
+    border: none;
+    margin: calc(var(--space-unit) * 4) 0;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* shadcn/ui compatibility */
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--panel);
+  --color-card-foreground: var(--text);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted);
+  --color-border: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--text);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --radius: var(--radius);
+}
