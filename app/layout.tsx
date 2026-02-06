@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AppNav } from "@/components/layout/AppNav";
-import { Footer } from "@/components/layout/Footer";
-import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,15 +41,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          <SmoothScrollProvider>
-            <div className="relative z-10 min-h-screen flex flex-col">
-              <AppNav />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-          </SmoothScrollProvider>
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );

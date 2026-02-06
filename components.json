@@ -18,5 +18,9 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "registries": {}
+  "registries": {
+    "@magicui": "https://magicui.design/r/{name}",
+    "@lucide-animated": "https://lucide-animated.com/r/{name}.json",
+    "@animate-ui": "https://animate-ui.com/r/{name}.json"
+  }
 }
