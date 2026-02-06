@@ -68,7 +68,7 @@ function HelloToDock() {
           ease: "easeOut",
         }}
       >
-        <AppleNameAryanBahlEffect
+        <AppleHelloEnglishEffect
           className="h-64 w-auto max-w-[90vw]"
           onAnimationComplete={handleSvgComplete}
           speed={0.9}
