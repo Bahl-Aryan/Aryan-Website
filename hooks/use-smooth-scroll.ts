@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import Lenis from "lenis";
-import { prefersReducedMotion } from "@/lib/motion";
+import { useEffect } from "react"
+import Lenis from "lenis"
+import { prefersReducedMotion } from "@/lib/motion"
 
 export function useSmoothScroll() {
   useEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (prefersReducedMotion()) return
 
     const lenis = new Lenis({
       duration: 1.2,
@@ -14,17 +14,17 @@ export function useSmoothScroll() {
       infinite: true,
       lerp: 0.1,
       smoothWheel: true,
-    });
+    })
 
     function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
+      lenis.raf(time)
+      requestAnimationFrame(raf)
     }
 
-    requestAnimationFrame(raf);
+    requestAnimationFrame(raf)
 
     return () => {
-      lenis.destroy();
-    };
-  }, []);
+      lenis.destroy()
+    }
+  }, [])
 }

@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 interface MetaRowProps {
-  role?: string;
-  timeframe?: string;
-  stack?: string[];
-  metric?: string;
+  role?: string
+  timeframe?: string
+  stack?: string[]
+  metric?: string
 }
 
 export function MetaRow({ role, timeframe, stack, metric }: MetaRowProps) {
   return (
-    <div className="flex flex-wrap gap-6 text-sm text-[var(--muted)] border-b border-[var(--faint)] pb-6">
+    <div className="flex flex-wrap gap-6 border-b border-[var(--faint)] pb-6 text-sm text-[var(--muted)]">
       {role && (
         <div>
           <span className="mono-small text-[var(--muted)]/60">Role</span>
@@ -33,9 +33,9 @@ export function MetaRow({ role, timeframe, stack, metric }: MetaRowProps) {
       {metric && (
         <div>
           <span className="mono-small text-[var(--muted)]/60">Metric</span>
-          <p className="mt-1 mono-small text-[var(--accent)]">{metric}</p>
+          <p className="mono-small mt-1 text-[var(--accent)]">{metric}</p>
         </div>
       )}
     </div>
-  );
+  )
 }

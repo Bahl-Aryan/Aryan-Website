@@ -13,7 +13,7 @@
   --faint: rgba(255, 255, 255, 0.08);
   --accent: #8b5cf6;
   --accent-2: #a78bfa;
-  
+
   /* Typography Scale */
   --font-display-xl: 3.5rem;
   --font-display-l: 2.5rem;
@@ -21,10 +21,10 @@
   --font-body: 1rem;
   --font-small: 0.875rem;
   --font-mono-small: 0.8125rem;
-  
+
   /* Spacing (8px base unit) */
   --space-unit: 8px;
-  
+
   /* Radius */
   --radius: 0.5rem;
 }
@@ -49,75 +49,86 @@ html[data-theme="ice-blue"],
     font-family: var(--font-geist-sans), system-ui, sans-serif;
     position: relative;
   }
-  
+
   body::before {
-    content: '';
+    content: "";
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
-      radial-gradient(circle at 1px 1px, var(--faint) 1px, transparent 0);
+    background-image: radial-gradient(circle at 1px 1px, var(--faint) 1px, transparent 0);
     background-size: 24px 24px;
     pointer-events: none;
     opacity: 0.3;
     z-index: 0;
   }
-  
+
   body::after {
-    content: '';
+    content: "";
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: 
-      radial-gradient(ellipse at top, rgba(var(--accent-rgb, 139, 92, 246), 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at bottom, rgba(var(--accent-rgb, 139, 92, 246), 0.03) 0%, transparent 50%);
+    background:
+      radial-gradient(
+        ellipse at top,
+        rgba(var(--accent-rgb, 139, 92, 246), 0.05) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at bottom,
+        rgba(var(--accent-rgb, 139, 92, 246), 0.03) 0%,
+        transparent 50%
+      );
     pointer-events: none;
     z-index: 0;
   }
 }
 
 [data-theme="ice-blue"] body::after {
-  background: 
+  background:
     radial-gradient(ellipse at top, rgba(96, 165, 250, 0.05) 0%, transparent 50%),
     radial-gradient(ellipse at bottom, rgba(96, 165, 250, 0.03) 0%, transparent 50%);
 }
 
 /* Typography System */
 @layer base {
-  h1, .display-xl {
+  h1,
+  .display-xl {
     font-size: var(--font-display-xl);
     line-height: 1.1;
     letter-spacing: -0.02em;
     font-weight: 600;
   }
-  
-  h2, .display-l {
+
+  h2,
+  .display-l {
     font-size: var(--font-display-l);
     line-height: 1.2;
     letter-spacing: -0.01em;
     font-weight: 600;
   }
-  
-  h3, .h3 {
+
+  h3,
+  .h3 {
     font-size: var(--font-h3);
     line-height: 1.3;
     font-weight: 600;
   }
-  
-  body, .body {
+
+  body,
+  .body {
     font-size: var(--font-body);
     line-height: 1.6;
   }
-  
+
   .small {
     font-size: var(--font-small);
     line-height: 1.5;
   }
-  
+
   .mono-small {
     font-family: var(--font-geist-mono), monospace;
     font-size: var(--font-mono-small);
@@ -134,35 +145,35 @@ html[data-theme="ice-blue"],
     padding-left: 24px;
     padding-right: 24px;
   }
-  
+
   @media (min-width: 768px) {
     .container-custom {
       padding-left: 48px;
       padding-right: 48px;
     }
   }
-  
+
   .section {
     padding-top: calc(var(--space-unit) * 8);
     padding-bottom: calc(var(--space-unit) * 8);
   }
-  
+
   .stack {
     display: flex;
     flex-direction: column;
   }
-  
+
   .stack > * + * {
     margin-top: calc(var(--space-unit) * 2);
   }
-  
+
   .cluster {
     display: flex;
     flex-wrap: wrap;
     gap: calc(var(--space-unit) * 2);
     align-items: center;
   }
-  
+
   .divider {
     height: 1px;
     background: var(--faint);
@@ -175,8 +186,7 @@ html[data-theme="ice-blue"],
 .boot-bg {
   background:
     radial-gradient(ellipse at 50% 30%, rgba(200, 210, 240, 0.4) 0%, transparent 60%),
-    radial-gradient(ellipse at 50% 70%, rgba(220, 225, 245, 0.3) 0%, transparent 50%),
-    #fafafa;
+    radial-gradient(ellipse at 50% 70%, rgba(220, 225, 245, 0.3) 0%, transparent 50%), #fafafa;
 }
 
 .boot-noise {
@@ -191,9 +201,16 @@ html[data-theme="ice-blue"],
 }
 
 /* ─── Liquid-glass utility tokens ─── */
-.glass-border  { border: 1px solid rgba(255, 255, 255, 0.12); }
-.glass-blur    { backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
-.glass-shadow  { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45); }
+.glass-border {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.glass-blur {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.glass-shadow {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
 .glass-highlight {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 40%);
 }

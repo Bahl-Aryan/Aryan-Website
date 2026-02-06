@@ -154,11 +154,7 @@ const DockIcon = ({
   const targetSize = disableMagnification ? size : magnification
 
   // Map distance -> size
-  const sizeTransform = useTransform(
-    dist,
-    [-distance, 0, distance],
-    [size, targetSize, size]
-  )
+  const sizeTransform = useTransform(dist, [-distance, 0, distance], [size, targetSize, size])
 
   const scaleSize = useSpring(sizeTransform, {
     mass: 0.12,
@@ -168,7 +164,7 @@ const DockIcon = ({
 
   return (
     <div
-      className="relative flex flex-col items-center group"
+      className="group relative flex flex-col items-center"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -186,7 +182,7 @@ const DockIcon = ({
                 damping: 20,
               },
             }}
-            className="absolute -top-14 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center justify-center rounded-full bg-black px-4 py-2 text-xs shadow-xl pointer-events-none"
+            className="pointer-events-none absolute -top-14 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center justify-center rounded-full bg-black px-4 py-2 text-xs shadow-xl"
             exit={{ opacity: 0, y: 20, scale: 0.3 }}
             initial={{ opacity: 0, y: 20, scale: 0.3 }}
             style={{
@@ -195,11 +191,7 @@ const DockIcon = ({
               whiteSpace: "nowrap",
             }}
           >
-            <TextAnimate
-              by="word"
-              className="text-base font-bold text-white"
-              animation="slideUp"
-            >
+            <TextAnimate by="word" className="text-base font-bold text-white" animation="slideUp">
               {label}
             </TextAnimate>
           </motion.div>
@@ -216,8 +208,8 @@ const DockIcon = ({
         ref={ref}
         style={{ width: scaleSize, height: scaleSize }}
         className={cn(
-          "relative flex aspect-square shrink-0 cursor-pointer items-center justify-center rounded-full z-10",
-          "bg-white/5 hover:bg-white/10 transition-colors",
+          "relative z-10 flex aspect-square shrink-0 cursor-pointer items-center justify-center rounded-full",
+          "bg-white/5 transition-colors hover:bg-white/10",
           className
         )}
         onMouseMove={handleMouseMove}
@@ -225,7 +217,6 @@ const DockIcon = ({
       >
         {children}
       </motion.div>
-
     </div>
   )
 }

@@ -1,13 +1,13 @@
-import { Metadata } from "next";
-import { PageTransition } from "@/components/shared/PageTransition";
-import { Reveal } from "@/components/shared/Reveal";
-import { ProjectCard } from "@/components/projects/ProjectCard";
-import { projectItems } from "@/lib/content/projects";
+import { Metadata } from "next"
+import { PageTransition } from "@/components/shared/PageTransition"
+import { Reveal } from "@/components/shared/Reveal"
+import { ProjectCard } from "@/components/projects/ProjectCard"
+import { projectItems } from "@/lib/content/projects"
 
 export const metadata: Metadata = {
   title: "Projects | Aryan Bahl",
   description: "Independent projects and research: compilers, RAG systems, and infrastructure.",
-};
+}
 
 export default function ProjectsPage() {
   return (
@@ -15,13 +15,13 @@ export default function ProjectsPage() {
       <Reveal>
         <section className="section">
           <div className="container-custom">
-            <div className="max-w-3xl mb-12">
-              <h1 className="display-xl text-[var(--text)] mb-4">Projects</h1>
+            <div className="mb-12 max-w-3xl">
+              <h1 className="display-xl mb-4 text-[var(--text)]">Projects</h1>
               <p className="display-l text-[var(--muted)]">
                 Independent projects and deep dives into systems, compilers, and infrastructure.
               </p>
             </div>
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid gap-6 md:grid-cols-2">
               {projectItems.map((project, index) => (
                 <Reveal key={project.slug} delay={index * 0.1}>
                   <ProjectCard
@@ -38,5 +38,5 @@ export default function ProjectsPage() {
         </section>
       </Reveal>
     </PageTransition>
-  );
+  )
 }

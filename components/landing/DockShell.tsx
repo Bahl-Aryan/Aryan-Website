@@ -37,18 +37,18 @@ function DockShell({ variant, className, children, expansionPhase = "dock" }: Do
   useEffect(() => {
     if (expansionPhase === "expand") {
       setUserIconScale(1.5)
-      
+
       const timer1 = setTimeout(() => {
         setUserIconShouldAnimate(true)
       }, 200)
-      
+
       const timer2 = setTimeout(() => {
         setUserIconScale(1)
         setTimeout(() => {
           setStartExpandAnimation(true)
         }, 300)
       }, 800) // 200ms delay + 600ms animation
-      
+
       return () => {
         clearTimeout(timer1)
         clearTimeout(timer2)
@@ -62,71 +62,77 @@ function DockShell({ variant, className, children, expansionPhase = "dock" }: Do
     }
   }, [expansionPhase])
 
-  const iconsToShow = children || defaultIcons.map((item) => {
-    const Icon = item.icon
-    const isCenterIcon = item.index === 2
-    const distanceFromCenter = Math.abs(item.index - 2)
+  const iconsToShow =
+    children ||
+    defaultIcons.map((item) => {
+      const Icon = item.icon
+      const isCenterIcon = item.index === 2
+      const distanceFromCenter = Math.abs(item.index - 2)
 
-    const iconElement = item.needsAnimateWrapper ? (
-      <AnimateIcon 
-        animate={isCenterIcon && userIconShouldAnimate ? "default" : false}
-        animateOnHover="default" 
-        loop={false} 
-        className="size-full"
-      >
+      const iconElement = item.needsAnimateWrapper ? (
+        <AnimateIcon
+          animate={isCenterIcon && userIconShouldAnimate ? "default" : false}
+          animateOnHover="default"
+          loop={false}
+          className="size-full"
+        >
+          <Icon className="size-full text-black dark:text-white" />
+        </AnimateIcon>
+      ) : (
         <Icon className="size-full text-black dark:text-white" />
-      </AnimateIcon>
-    ) : (
-      <Icon className="size-full text-black dark:text-white" />
-    )
-    
-    const iconInner = isCenterIcon ? (
-      <motion.div
-        animate={{ scale: userIconScale }}
-        transition={{
-          duration: 0.3,
-          ease: "easeOut"
-        }}
-        className="size-full flex items-center justify-center [&_svg]:!w-full [&_svg]:!h-full [&_svg]:max-w-full [&_svg]:max-h-full"
-      >
-        {iconElement}
-      </motion.div>
-    ) : (
-      // Other icons: fade in with scale during expansion
-      <motion.div
-        initial={{ 
-          opacity: 0,
-          scale: 0.8
-        }}
-        animate={startExpandAnimation ? {
-          opacity: 1,
-          scale: 1
-        } : {
-          opacity: 0,
-          scale: 0.8
-        }}
-        transition={{
-          delay: distanceFromCenter * 0.08,
-          duration: 0.45,
-          ease: [0.16, 1, 0.3, 1]
-        }}
-        className="size-full flex items-center justify-center [&_svg]:!w-full [&_svg]:!h-full [&_svg]:max-w-full [&_svg]:max-h-full"
-      >
-        {iconElement}
-      </motion.div>
-    )
+      )
 
-    return (
-      <DockIcon key={item.index} label={item.label} value={item.label}>
-        {iconInner}
-      </DockIcon>
-    )
-  })
+      const iconInner = isCenterIcon ? (
+        <motion.div
+          animate={{ scale: userIconScale }}
+          transition={{
+            duration: 0.3,
+            ease: "easeOut",
+          }}
+          className="flex size-full items-center justify-center [&_svg]:!h-full [&_svg]:max-h-full [&_svg]:!w-full [&_svg]:max-w-full"
+        >
+          {iconElement}
+        </motion.div>
+      ) : (
+        // Other icons: fade in with scale during expansion
+        <motion.div
+          initial={{
+            opacity: 0,
+            scale: 0.8,
+          }}
+          animate={
+            startExpandAnimation
+              ? {
+                  opacity: 1,
+                  scale: 1,
+                }
+              : {
+                  opacity: 0,
+                  scale: 0.8,
+                }
+          }
+          transition={{
+            delay: distanceFromCenter * 0.08,
+            duration: 0.45,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+          className="flex size-full items-center justify-center [&_svg]:!h-full [&_svg]:max-h-full [&_svg]:!w-full [&_svg]:max-w-full"
+        >
+          {iconElement}
+        </motion.div>
+      )
+
+      return (
+        <DockIcon key={item.index} label={item.label} value={item.label}>
+          {iconInner}
+        </DockIcon>
+      )
+    })
 
   return (
     <Dock
       className={cn(
-        "justify-evenly w-[min(420px,92vw)]",
+        "w-[min(420px,92vw)] justify-evenly",
         expansionPhase === "expand" && "pointer-events-none" // Disable pointer events during expansion
       )}
       direction="bottom"

@@ -1,20 +1,20 @@
-"use client";
+"use client"
 
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Reveal } from "./Reveal";
+} from "@/components/ui/accordion"
+import { Reveal } from "./Reveal"
 
 interface UnderTheHoodItem {
-  title: string;
-  content: string | React.ReactNode;
+  title: string
+  content: string | React.ReactNode
 }
 
 interface UnderTheHoodAccordionProps {
-  items: UnderTheHoodItem[];
+  items: UnderTheHoodItem[]
 }
 
 export function UnderTheHoodAccordion({ items }: UnderTheHoodAccordionProps) {
@@ -23,7 +23,7 @@ export function UnderTheHoodAccordion({ items }: UnderTheHoodAccordionProps) {
       <section className="section">
         <div className="container-custom">
           <div className="max-w-3xl">
-            <h2 className="display-l text-[var(--text)] mb-6">Under the Hood</h2>
+            <h2 className="display-l mb-6 text-[var(--text)]">Under the Hood</h2>
             <Accordion type="single" collapsible className="w-full">
               {items.map((item, index) => (
                 <AccordionItem
@@ -34,12 +34,8 @@ export function UnderTheHoodAccordion({ items }: UnderTheHoodAccordionProps) {
                   <AccordionTrigger className="text-left text-[var(--text)] hover:text-[var(--accent)]">
                     {item.title}
                   </AccordionTrigger>
-                  <AccordionContent className="text-[var(--muted)] body">
-                    {typeof item.content === "string" ? (
-                      <p>{item.content}</p>
-                    ) : (
-                      item.content
-                    )}
+                  <AccordionContent className="body text-[var(--muted)]">
+                    {typeof item.content === "string" ? <p>{item.content}</p> : item.content}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -48,5 +44,5 @@ export function UnderTheHoodAccordion({ items }: UnderTheHoodAccordionProps) {
         </div>
       </section>
     </Reveal>
-  );
+  )
 }

@@ -1,24 +1,24 @@
-import { Variants } from "framer-motion";
+import { Variants } from "framer-motion"
 
 // Easing curves (premium, heavy feel)
 export const easing = {
   standard: [0.4, 0, 0.2, 1] as [number, number, number, number],
   heavy: [0.5, 0, 0.3, 1] as [number, number, number, number],
   micro: [0.4, 0, 0.6, 1] as [number, number, number, number],
-};
+}
 
 // Durations
 export const duration = {
   micro: 0.15,
   standard: 0.35,
   hero: 0.75,
-};
+}
 
 // Check for reduced motion preference
 export const prefersReducedMotion = (): boolean => {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-};
+  if (typeof window === "undefined") return false
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+}
 
 // Reveal animation (scroll-triggered)
 export const revealVariants: Variants = {
@@ -34,7 +34,7 @@ export const revealVariants: Variants = {
       ease: easing.standard,
     },
   },
-};
+}
 
 // Page transition
 export const pageTransitionVariants: Variants = {
@@ -58,7 +58,7 @@ export const pageTransitionVariants: Variants = {
       ease: easing.micro,
     },
   },
-};
+}
 
 // Hover lift
 export const hoverLiftVariants: Variants = {
@@ -76,4 +76,4 @@ export const hoverLiftVariants: Variants = {
       ease: easing.micro,
     },
   },
-};
+}

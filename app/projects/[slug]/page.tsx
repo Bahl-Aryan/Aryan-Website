@@ -1,47 +1,43 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { PageTransition } from "@/components/shared/PageTransition";
-import { Reveal } from "@/components/shared/Reveal";
-import { CaseStudySection } from "@/components/work/CaseStudySection";
-import { UnderTheHoodAccordion } from "@/components/shared/UnderTheHoodAccordion";
-import { getProjectItem, projectItems } from "@/lib/content/projects";
+import { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { PageTransition } from "@/components/shared/PageTransition"
+import { Reveal } from "@/components/shared/Reveal"
+import { CaseStudySection } from "@/components/work/CaseStudySection"
+import { UnderTheHoodAccordion } from "@/components/shared/UnderTheHoodAccordion"
+import { getProjectItem, projectItems } from "@/lib/content/projects"
 
 export async function generateStaticParams() {
   return projectItems.map((item) => ({
     slug: item.slug,
-  }));
+  }))
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string }>
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const project = getProjectItem(slug);
+  const { slug } = await params
+  const project = getProjectItem(slug)
 
   if (!project) {
     return {
       title: "Not Found",
-    };
+    }
   }
 
   return {
     title: `${project.title} | Aryan Bahl`,
     description: project.subtitle,
-  };
+  }
 }
 
-export default async function ProjectPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const project = getProjectItem(slug);
+export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const project = getProjectItem(slug)
 
   if (!project) {
-    notFound();
+    notFound()
   }
 
   return (
@@ -50,8 +46,8 @@ export default async function ProjectPage({
         <section className="section">
           <div className="container-custom">
             <div className="max-w-3xl">
-              <h1 className="display-xl text-[var(--text)] mb-4">{project.title}</h1>
-              <p className="display-l text-[var(--muted)] mb-8">{project.subtitle}</p>
+              <h1 className="display-xl mb-4 text-[var(--text)]">{project.title}</h1>
+              <p className="display-l mb-8 text-[var(--muted)]">{project.subtitle}</p>
             </div>
           </div>
         </section>
@@ -66,7 +62,7 @@ export default async function ProjectPage({
         <p>{project.implementation}</p>
       </CaseStudySection>
       <CaseStudySection title="Results / Benchmarks">
-        <ul className="list-disc list-inside space-y-2">
+        <ul className="list-inside list-disc space-y-2">
           {project.results.map((result, index) => (
             <li key={index}>{result}</li>
           ))}
@@ -76,11 +72,9 @@ export default async function ProjectPage({
         <p>{project.learnings}</p>
       </CaseStudySection>
       <div className="container-custom max-w-3xl">
-        <div className="mono-small text-[var(--muted)]/60 mb-4">
-          Scale / Reliability / Latency
-        </div>
+        <div className="mono-small mb-4 text-[var(--muted)]/60">Scale / Reliability / Latency</div>
       </div>
       <UnderTheHoodAccordion items={project.underTheHood} />
     </PageTransition>
-  );
+  )
 }

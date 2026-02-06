@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import { motion } from "framer-motion";
-import { pageTransitionVariants, prefersReducedMotion } from "@/lib/motion";
-import { cn } from "@/lib/utils";
+import { motion } from "framer-motion"
+import { pageTransitionVariants, prefersReducedMotion } from "@/lib/motion"
+import { cn } from "@/lib/utils"
 
 interface PageTransitionProps {
-  children: React.ReactNode;
-  className?: string;
+  children: React.ReactNode
+  className?: string
 }
 
 export function PageTransition({ children, className }: PageTransitionProps) {
-  const shouldAnimate = !prefersReducedMotion();
+  const shouldAnimate = !prefersReducedMotion()
 
   return (
     <motion.div
@@ -22,5 +22,5 @@ export function PageTransition({ children, className }: PageTransitionProps) {
     >
       {children}
     </motion.div>
-  );
+  )
 }

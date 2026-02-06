@@ -19,7 +19,13 @@ type Props = React.ComponentProps<typeof motion.svg> & {
   skipAnimation?: boolean
 }
 
-function AppleHelloEnglishEffect({ className, speed = 1, onAnimationComplete, skipAnimation = false, ...props }: Props) {
+function AppleHelloEnglishEffect({
+  className,
+  speed = 1,
+  onAnimationComplete,
+  skipAnimation = false,
+  ...props
+}: Props) {
   const calc = (x: number) => x * speed
 
   return (
@@ -62,7 +68,7 @@ function AppleHelloEnglishEffect({ className, speed = 1, onAnimationComplete, sk
           </stop>
         </linearGradient>
         <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+          <feGaussianBlur stdDeviation="5" result="coloredBlur" />
         </filter>
       </defs>
       <title>hello</title>

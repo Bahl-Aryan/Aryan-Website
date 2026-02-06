@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
-import { cn } from "@/lib/utils";
+import Link from "next/link"
+import { ThemeToggle } from "@/components/shared/ThemeToggle"
+import { cn } from "@/lib/utils"
 
 const navLinks = [
   { href: "/work", label: "Work" },
@@ -10,7 +10,7 @@ const navLinks = [
   { href: "/leadership", label: "Leadership" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-];
+]
 
 export function AppNav() {
   return (
@@ -19,17 +19,17 @@ export function AppNav() {
         <div className="flex h-16 items-center justify-between">
           <Link
             href="/"
-            className="text-lg font-semibold text-[var(--text)] hover:text-[var(--accent)] transition-colors"
+            className="text-lg font-semibold text-[var(--text)] transition-colors hover:text-[var(--accent)]"
           >
             Aryan Bahl
           </Link>
           <div className="flex items-center gap-6">
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden items-center gap-6 md:flex">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm text-[var(--muted)] hover:text-[var(--text)] transition-colors"
+                  className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--text)]"
                 >
                   {link.label}
                 </Link>
@@ -40,5 +40,5 @@ export function AppNav() {
         </div>
       </div>
     </nav>
-  );
+  )
 }
