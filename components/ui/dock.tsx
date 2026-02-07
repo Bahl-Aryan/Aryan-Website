@@ -79,6 +79,7 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
           "items-start": direction === "top",
           "items-center": direction === "middle",
           "items-end": direction === "bottom",
+          "bg-transparent": true,
         })}
       >
         {renderChildren()}
@@ -164,7 +165,7 @@ const DockIcon = ({
 
   return (
     <div
-      className="group relative flex flex-col items-center"
+      className="group relative flex flex-col items-center bg-transparent"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -209,7 +210,7 @@ const DockIcon = ({
         style={{ width: scaleSize, height: scaleSize }}
         className={cn(
           "relative z-10 flex aspect-square shrink-0 cursor-pointer items-center justify-center rounded-full",
-          "bg-white/5 transition-colors hover:bg-white/10",
+          "bg-white/5 transition-colors",
           className
         )}
         onMouseMove={handleMouseMove}

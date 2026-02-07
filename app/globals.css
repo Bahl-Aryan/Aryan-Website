@@ -6,7 +6,7 @@
 /* Design System: Color Tokens */
 :root {
   /* Violet Night Theme (Default) */
-  --bg: #0a0a0a;
+  --bg: #ffffff;
   --panel: #121212;
   --text: #f5f5f5;
   --muted: #a3a3a3;
@@ -60,7 +60,7 @@ html[data-theme="ice-blue"],
     background-image: radial-gradient(circle at 1px 1px, var(--faint) 1px, transparent 0);
     background-size: 24px 24px;
     pointer-events: none;
-    opacity: 0.3;
+    opacity: 0;
     z-index: 0;
   }
 
@@ -71,17 +71,7 @@ html[data-theme="ice-blue"],
     left: 0;
     right: 0;
     bottom: 0;
-    background:
-      radial-gradient(
-        ellipse at top,
-        rgba(var(--accent-rgb, 139, 92, 246), 0.05) 0%,
-        transparent 50%
-      ),
-      radial-gradient(
-        ellipse at bottom,
-        rgba(var(--accent-rgb, 139, 92, 246), 0.03) 0%,
-        transparent 50%
-      );
+    background: transparent;
     pointer-events: none;
     z-index: 0;
   }
@@ -184,9 +174,7 @@ html[data-theme="ice-blue"],
 
 /* ─── Boot Scene ─── */
 .boot-bg {
-  background:
-    radial-gradient(ellipse at 50% 30%, rgba(200, 210, 240, 0.4) 0%, transparent 60%),
-    radial-gradient(ellipse at 50% 70%, rgba(220, 225, 245, 0.3) 0%, transparent 50%), #fafafa;
+  background: #ffffff;
 }
 
 .boot-noise {

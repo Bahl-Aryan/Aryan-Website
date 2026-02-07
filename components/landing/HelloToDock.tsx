@@ -6,6 +6,7 @@ import { AppleHelloEnglishEffect } from "@/components/apple-effects/AppleHelloEf
 import { AppleNameAryanBahlEffect } from "@/components/apple-effects/AppleAryanEffect"
 import { DockShell } from "@/components/landing/DockShell"
 import { useReducedMotionPref } from "@/lib/useReducedMotionPref"
+import ColorBends from "@/components/background/ColorBends"
 
 // ────────────────────────────────────────────
 // Phase machine
@@ -39,6 +40,10 @@ function HelloToDock() {
   if (prefersReducedMotion) {
     return (
       <div className="boot-bg fixed inset-0 z-50">
+        {/* ─── Vignette overlay ─── */}
+        <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0)_0%,rgba(0,0,0,0.65)_70%,rgba(0,0,0,0.9)_100%)]" />
+        {/* ─── Noise overlay ─── */}
+        <div className="boot-noise" style={{ opacity: 0.11 }} />
         <div className="absolute inset-x-0 bottom-6 z-10 flex justify-center">
           <DockShell variant="top" />
         </div>
@@ -48,9 +53,6 @@ function HelloToDock() {
 
   return (
     <div className="boot-bg fixed inset-0 z-50">
-      {/* ─── Noise overlay (z-0) ─── */}
-      <div className="boot-noise" />
-
       {/* ─── Dock: appears at bottom after fade, expands from center ─── */}
       {(phase === "expand" || phase === "dock") && (
         <div className="absolute inset-x-0 bottom-6 z-10 flex justify-center">

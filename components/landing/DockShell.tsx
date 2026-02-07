@@ -3,6 +3,7 @@
 import React, { useEffect } from "react"
 import { Dock, DockIcon } from "@/components/ui/dock"
 import { HomeIcon } from "@/components/icons/home"
+import { ClockIcon } from "@/components/icons/clock"
 import { LayoutPanelTopIcon } from "@/components/icons/layout-panel-top"
 import { User } from "@/components/icons/user"
 import { FeatherIcon } from "@/components/icons/feather"
@@ -27,7 +28,7 @@ function DockShell({ variant, className, children, expansionPhase = "dock" }: Do
   // Default icons with labels
   // Index 2 is the center icon (User/Timeline)
   const defaultIcons = [
-    { icon: HomeIcon, label: "Home", index: 0 },
+    { icon: ClockIcon, label: "Current", index: 0 },
     { icon: LayoutPanelTopIcon, label: "Projects", index: 1 },
     { icon: User, label: "Timeline", needsAnimateWrapper: true, index: 2 },
     { icon: FeatherIcon, label: "Notes", index: 3 },
@@ -132,8 +133,8 @@ function DockShell({ variant, className, children, expansionPhase = "dock" }: Do
   return (
     <Dock
       className={cn(
-        "w-[min(420px,92vw)] justify-evenly",
-        expansionPhase === "expand" && "pointer-events-none" // Disable pointer events during expansion
+        "w-[min(420px,92vw)] justify-evenly border-0",
+        expansionPhase === "expand" && "pointer-events-none", // Disable pointer events during expansion
       )}
       direction="bottom"
       iconSize={36}
