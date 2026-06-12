@@ -2,16 +2,8 @@
 
 import React, { PropsWithChildren, useRef } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import {
-  motion,
-  MotionValue,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  AnimatePresence,
-} from "framer-motion"
+import { motion, MotionValue, useMotionValue, useSpring, useTransform } from "framer-motion"
 import type { MotionProps } from "framer-motion"
-import { TextAnimate } from "@/components/ui/text-animate"
 
 import { cn } from "@/lib/utils"
 
@@ -102,8 +94,7 @@ export interface DockIconProps extends Omit<
   className?: string
   children?: React.ReactNode
   props?: PropsWithChildren
-  label?: string
-  value?: string
+  registerEl?: (el: HTMLDivElement | null) => void
 }
 
 const DockIcon = ({
@@ -114,32 +105,11 @@ const DockIcon = ({
   mouseX,
   className,
   children,
-  label,
-  value,
+  registerEl,
   ...props
 }: DockIconProps) => {
   const ref = useRef<HTMLDivElement>(null)
   const fallbackMouseX = useMotionValue(Infinity)
-  const [hovered, setHovered] = React.useState(false)
-  const springConfig = { stiffness: 100, damping: 15 }
-  const x = useMotionValue(0)
-  const animationFrameRef = useRef<number | null>(null)
-
-  const rotate = useSpring(useTransform(x, [-100, 100], [-45, 45]), springConfig)
-  const translateX = useSpring(useTransform(x, [-100, 100], [-50, 50]), springConfig)
-
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current)
-    }
-
-    animationFrameRef.current = requestAnimationFrame(() => {
-      if (event.currentTarget) {
-        const halfWidth = (event.currentTarget as HTMLElement).offsetWidth / 2
-        x.set(event.nativeEvent.offsetX - halfWidth)
-      }
-    })
-  }
 
   const effectiveMouseX = mouseX ?? fallbackMouseX
 
@@ -164,41 +134,7 @@ const DockIcon = ({
   })
 
   return (
-    <div
-      className="group relative flex flex-col items-center bg-transparent"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {/* Tooltip */}
-      <AnimatePresence>
-        {label && hovered && (
-          <motion.div
-            animate={{
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              transition: {
-                type: "spring",
-                stiffness: 300,
-                damping: 20,
-              },
-            }}
-            className="pointer-events-none absolute -top-14 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center justify-center rounded-full bg-black px-4 py-2 text-xs shadow-xl"
-            exit={{ opacity: 0, y: 20, scale: 0.3 }}
-            initial={{ opacity: 0, y: 20, scale: 0.3 }}
-            style={{
-              translateX,
-              rotate,
-              whiteSpace: "nowrap",
-            }}
-          >
-            <TextAnimate by="word" className="text-base font-bold text-white" animation="slideUp">
-              {label}
-            </TextAnimate>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+    <div ref={registerEl} className="group relative flex flex-col items-center bg-transparent">
       {/* Invisible larger hit area for better hover detection */}
       <div
         className="absolute inset-0 -m-2"
@@ -213,7 +149,6 @@ const DockIcon = ({
           "bg-white/5 transition-colors",
           className
         )}
-        onMouseMove={handleMouseMove}
         {...props}
       >
         {children}

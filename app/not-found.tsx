@@ -1,26 +1,16 @@
 import Link from "next/link"
-import { PageTransition } from "@/components/shared/PageTransition"
-import { Reveal } from "@/components/shared/Reveal"
 
 export default function NotFound() {
   return (
-    <PageTransition>
-      <Reveal>
-        <section className="section">
-          <div className="container-custom">
-            <div className="mx-auto max-w-2xl text-center">
-              <h1 className="display-xl mb-4 text-[var(--text)]">404</h1>
-              <p className="display-l mb-8 text-[var(--muted)]">Page not found</p>
-              <Link
-                href="/"
-                className="text-sm text-[var(--accent)] transition-colors hover:text-[var(--accent-2)]"
-              >
-                Return home →
-              </Link>
-            </div>
-          </div>
-        </section>
-      </Reveal>
-    </PageTransition>
+    <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-[linear-gradient(150deg,#3b1d8f_0%,#7a2bd1_35%,#c33aa0_70%,#e8602c_100%)] text-white">
+      <p className="font-mono text-sm text-white/70">zsh: page not found: 404</p>
+      <h1 className="text-3xl font-semibold tracking-tight">this window doesn&apos;t exist</h1>
+      <Link
+        href="/"
+        className="mt-2 rounded-xl border border-white/30 bg-white/15 px-4 py-2 text-sm font-medium backdrop-blur-md transition-colors hover:bg-white/25"
+      >
+        ← back to the desktop
+      </Link>
+    </div>
   )
 }

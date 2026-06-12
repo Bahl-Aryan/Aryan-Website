@@ -1,5 +1,5 @@
-import { HelloToDock } from "@/components/landing/HelloToDock"
+import { DesktopOS } from "@/components/os/DesktopOS"
 
 export default function Home() {
-  return <HelloToDock />
+  return <DesktopOS />
 }
