@@ -7,7 +7,7 @@ import { useWindowManager } from "@/lib/os/window-manager"
 const SPECS: [string, string][] = [
   ["Chip", "Caffeine M2 Pro"],
   ["Memory", "too many browser tabs"],
-  ["Now", "building at Endeavor — ai for the physical world"],
+  ["Now", "building at Endeavor"],
   ["School", "MCS @ UIUC · Dec 2026"],
   ["Base", "San Francisco Bay Area"],
   ["Editor", "vscode → neovim (in progress)"],

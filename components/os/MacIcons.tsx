@@ -360,6 +360,36 @@ function TextEditIcon() {
   )
 }
 
+// ── Music: the note bounces to the beat ───────────────────────
+function MusicIcon() {
+  return (
+    <Squircle className="bg-gradient-to-b from-[#fc5c7d] to-[#fa2d48]">
+      <motion.svg
+        viewBox="0 0 100 100"
+        className="size-[60%]"
+        variants={{
+          rest: { y: 0, rotate: 0 },
+          hover: {
+            y: [0, -6, 0, -3, 0],
+            rotate: [0, -8, 6, -3, 0],
+            transition: { duration: 0.6 },
+          },
+        }}
+      >
+        <path
+          d="M38 78 V30 L78 20 V68"
+          fill="none"
+          stroke="white"
+          strokeWidth="7"
+          strokeLinejoin="round"
+        />
+        <ellipse cx="29" cy="78" rx="11" ry="9" fill="white" />
+        <ellipse cx="69" cy="68" rx="11" ry="9" fill="white" />
+      </motion.svg>
+    </Squircle>
+  )
+}
+
 const APP_ICONS: Record<AppId, React.ComponentType> = {
   current: ActivityIcon,
   projects: FinderIcon,
@@ -371,6 +401,7 @@ const APP_ICONS: Record<AppId, React.ComponentType> = {
   about: AboutIcon,
   trash: TrashIcon,
   textedit: TextEditIcon,
+  music: MusicIcon,
 }
 
 function MacAppIcon({ appId, className }: { appId: AppId; className?: string }) {

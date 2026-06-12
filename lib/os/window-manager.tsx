@@ -13,6 +13,7 @@ export type AppId =
   | "terminal"
   | "trash"
   | "textedit"
+  | "music"
 
 // Desktop-level actions (wallpaper, sleep) registered by the Desktop so
 // other surfaces — the Terminal, menus — can drive them.
@@ -45,6 +46,7 @@ type WindowManagerValue = {
   setBounds: (appId: AppId, bounds: Bounds) => void
   getExitReason: (appId: AppId) => ExitReason
   desktopActions: React.MutableRefObject<DesktopActions>
+  setDesktopActions: (actions: DesktopActions) => void
 }
 
 const WindowManagerContext = createContext<WindowManagerValue | null>(null)
@@ -57,6 +59,9 @@ function WindowManagerProvider({ children }: { children: React.ReactNode }) {
   const boundsStore = useRef(new Map<AppId, Bounds>())
   const exitReasons = useRef(new Map<AppId, ExitReason>())
   const desktopActions = useRef<DesktopActions>({})
+  const setDesktopActions = useCallback((actions: DesktopActions) => {
+    desktopActions.current = actions
+  }, [])
 
   const openApp = useCallback((appId: AppId) => {
     setAnyEverOpened(true)
@@ -140,6 +145,7 @@ function WindowManagerProvider({ children }: { children: React.ReactNode }) {
         setBounds,
         getExitReason,
         desktopActions,
+        setDesktopActions,
       }}
     >
       {children}

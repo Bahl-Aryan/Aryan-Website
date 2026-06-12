@@ -10,6 +10,7 @@ import { AboutApp } from "@/components/os/apps/AboutApp"
 import { TerminalApp } from "@/components/os/apps/TerminalApp"
 import { TrashApp } from "@/components/os/apps/TrashApp"
 import { TextEditApp } from "@/components/os/apps/TextEditApp"
+import { MusicApp } from "@/components/os/apps/MusicApp"
 
 export type AppDefinition = {
   id: AppId
@@ -112,6 +113,15 @@ export const APPS: Record<AppId, AppDefinition> = {
     defaultSize: { w: 520, h: 480 },
     minSize: { w: 360, h: 300 },
   },
+  music: {
+    id: "music",
+    title: "Music",
+    dockLabel: "Music",
+    spotlight: "replay '26 — top tracks & artists",
+    component: MusicApp,
+    defaultSize: { w: 760, h: 580 },
+    minSize: { w: 420, h: 380 },
+  },
 }
 
 // Render order for the window layer (all apps)
@@ -126,6 +136,7 @@ export const APP_ORDER: AppId[] = [
   "about",
   "trash",
   "textedit",
+  "music",
 ]
 
 // What actually sits in the dock (trash is rendered separately after a divider)
@@ -134,6 +145,7 @@ export const DOCK_APPS: AppId[] = [
   "projects",
   "timeline",
   "notes",
+  "music",
   "contact",
   "terminal",
 ]
@@ -146,6 +158,7 @@ export const SPOTLIGHT_APPS: AppId[] = [
   "notes",
   "contact",
   "terminal",
+  "music",
   "resume",
   "about",
   "trash",

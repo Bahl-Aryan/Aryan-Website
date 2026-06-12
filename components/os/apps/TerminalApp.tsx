@@ -43,6 +43,7 @@ const OPENABLE: Record<string, AppId> = {
   trash: "trash",
   textedit: "textedit",
   "coffee.txt": "textedit",
+  music: "music",
 }
 
 const NEOFETCH = String.raw`
@@ -114,6 +115,11 @@ function cowsay(text: string): string {
     "                ||     ||",
   ].join("\n")
 }
+
+// Module-scope helpers: impure (random/time), so they live outside render
+const randomFortune = () => FORTUNES[Math.floor(Math.random() * FORTUNES.length)]
+const uptimeText = () =>
+  `up ${Math.max(1, Math.round((Date.now() - performance.timeOrigin) / 1000 / 60))} min (since you opened this site) · load average: see Activity Monitor`
 
 const COMMANDS = [
   "help",
@@ -304,12 +310,10 @@ function TerminalApp() {
         print(cowsay(args.join(" ")))
         break
       case "fortune":
-        print(FORTUNES[Math.floor(Math.random() * FORTUNES.length)])
+        print(randomFortune())
         break
       case "uptime":
-        print(
-          `up ${Math.max(1, Math.round((Date.now() - performance.timeOrigin) / 1000 / 60))} min (since you opened this site) · load average: see Activity Monitor`
-        )
+        print(uptimeText())
         break
       case "history":
         print(history.map((h, i) => `  ${i + 1}  ${h}`).join("\n") || "no history yet")

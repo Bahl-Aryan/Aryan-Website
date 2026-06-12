@@ -2,9 +2,10 @@
 
 import React, { useCallback, useEffect, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Battery, FileText, Folder, Search, Wifi } from "lucide-react"
+import { Battery, FileText, Folder, Search, Wifi, X } from "lucide-react"
 import { OSDock } from "@/components/os/Dock"
 import { OSWindow } from "@/components/os/Window"
+import { MacAppIcon } from "@/components/os/MacIcons"
 import { Spotlight } from "@/components/os/Spotlight"
 import { APP_ORDER, APPS } from "@/lib/os/apps"
 import { useWindowManager, type AppId } from "@/lib/os/window-manager"
@@ -258,7 +259,10 @@ function MenuBar({
     <>
       {/* click-away layer while a menu is open */}
       {openMenu && <div className="fixed inset-0 z-40" onClick={close} />}
-      <div className="absolute inset-x-0 top-0 z-40 flex h-8 items-stretch justify-between bg-white/10 px-2 text-white backdrop-blur-xl select-none">
+      <div
+        className="absolute inset-x-0 top-0 z-40 flex h-8 items-stretch justify-between bg-white/10 px-2 text-white backdrop-blur-xl select-none"
+        data-no-desktop-menu
+      >
         <div className="flex items-stretch gap-0.5">
           {menuButton(
             "logo",
@@ -305,6 +309,187 @@ function MenuBar({
         </div>
       </div>
     </>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Right-click context menu for the bare desktop.
+// ─────────────────────────────────────────────────────────────
+function ContextMenu({
+  position,
+  items,
+  onClose,
+}: {
+  position: { x: number; y: number }
+  items: MenuItem[]
+  onClose: () => void
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose()
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [onClose])
+
+  // Keep the menu inside the viewport
+  const style = {
+    left: Math.min(position.x, (typeof window !== "undefined" ? window.innerWidth : 1440) - 230),
+    top: Math.min(position.y, (typeof window !== "undefined" ? window.innerHeight : 900) - 280),
+  }
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[58]"
+        onClick={onClose}
+        onContextMenu={(e) => e.preventDefault()}
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.1 }}
+        style={style}
+        className="fixed z-[59] min-w-52 rounded-xl border border-white/25 bg-white/75 p-1 shadow-[0_18px_50px_-10px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
+      >
+        {items.map((item, i) =>
+          item.divider ? (
+            <div key={i} className="mx-2 my-1 h-px bg-black/[0.08]" />
+          ) : (
+            <button
+              key={i}
+              disabled={item.disabled}
+              onClick={() => {
+                item.action?.()
+                onClose()
+              }}
+              className={cn(
+                "flex w-full items-center justify-between gap-6 rounded-lg px-2.5 py-1 text-left text-[13px]",
+                item.disabled
+                  ? "cursor-default text-neutral-400"
+                  : "text-neutral-800 hover:bg-[#2563eb] hover:text-white"
+              )}
+            >
+              {item.label}
+            </button>
+          )
+        )}
+      </motion.div>
+    </>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Notification Center-style toasts.
+// ─────────────────────────────────────────────────────────────
+type Notice = {
+  id: number
+  appId: AppId
+  title: string
+  body: string
+  actions?: { label: string; onClick: () => void }[]
+}
+
+function Notifications() {
+  const { openApp } = useWindowManager()
+  const [notices, setNotices] = useState<Notice[]>([])
+  const dismiss = useCallback((id: number) => {
+    setNotices((prev) => prev.filter((n) => n.id !== id))
+  }, [])
+
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = []
+    const push = (notice: Notice, ttl: number) => {
+      setNotices((prev) => [...prev, notice])
+      timers.push(setTimeout(() => dismiss(notice.id), ttl))
+    }
+
+    timers.push(
+      setTimeout(
+        () =>
+          push(
+            {
+              id: 1,
+              appId: "about",
+              title: "Welcome to aryanOS",
+              body: "poke around — nothing here can break. probably.",
+            },
+            8000
+          ),
+        2200
+      )
+    )
+    timers.push(
+      setTimeout(
+        () =>
+          push(
+            {
+              id: 2,
+              appId: "contact",
+              title: "Aryan Bahl",
+              body: "in sf? let's grab a coffee ☕",
+              actions: [
+                { label: "Reply", onClick: () => openApp("contact") },
+                {
+                  label: "Accept",
+                  onClick: () => window.open("mailto:bahlaryan@gmail.com?subject=coffee%3F"),
+                },
+              ],
+            },
+            18000
+          ),
+        45000
+      )
+    )
+    return () => timers.forEach(clearTimeout)
+  }, [dismiss, openApp])
+
+  return (
+    <div className="absolute top-10 right-3 z-[55] flex w-[330px] flex-col gap-2">
+      <AnimatePresence>
+        {notices.map((notice) => (
+          <motion.div
+            key={notice.id}
+            initial={{ opacity: 0, x: 80, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 90, transition: { duration: 0.2 } }}
+            transition={{ type: "spring", stiffness: 320, damping: 28 }}
+            className="group/notice rounded-2xl border border-white/30 bg-white/70 p-3 shadow-[0_14px_40px_-10px_rgba(0,0,0,0.4)] backdrop-blur-2xl"
+          >
+            <div className="flex items-start gap-2.5">
+              <div className="size-8 shrink-0">
+                <MacAppIcon appId={notice.appId} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-neutral-800">{notice.title}</p>
+                <p className="mt-0.5 text-xs leading-snug text-neutral-600">{notice.body}</p>
+              </div>
+              <button
+                onClick={() => dismiss(notice.id)}
+                aria-label="Dismiss notification"
+                className="hidden rounded-full p-0.5 text-neutral-400 group-hover/notice:block hover:bg-black/[0.06]"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+            {notice.actions && (
+              <div className="mt-2 flex justify-end gap-1.5">
+                {notice.actions.map((action) => (
+                  <button
+                    key={action.label}
+                    onClick={() => {
+                      action.onClick()
+                      dismiss(notice.id)
+                    }}
+                    className="rounded-lg bg-black/[0.06] px-3 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-black/[0.12]"
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
   )
 }
 
@@ -457,9 +642,18 @@ function Desktop() {
   const [wallpaper, setWallpaper] = useState(0)
   const wallpaperRef = React.useRef(0)
   const [asleep, setAsleep] = useState(false)
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null)
   const toggleSpotlight = useCallback(() => setSpotlightOpen((s) => !s), [])
   const wake = useCallback(() => setAsleep(false), [])
   useShortcuts(toggleSpotlight)
+
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    // Only the bare desktop gets the custom menu — windows, dock, and
+    // menu bar keep their normal behavior.
+    if ((e.target as HTMLElement).closest("[data-no-desktop-menu]")) return
+    e.preventDefault()
+    setCtxMenu({ x: e.clientX, y: e.clientY })
+  }, [])
 
   const nextWallpaper = useCallback(() => {
     const next = (wallpaperRef.current + 1) % WALLPAPERS.length
@@ -470,7 +664,7 @@ function Desktop() {
 
   // Expose wallpaper/sleep to the rest of the OS (Terminal, menus)
   useEffect(() => {
-    wm.desktopActions.current = { nextWallpaper, sleep: () => setAsleep(true) }
+    wm.setDesktopActions({ nextWallpaper, sleep: () => setAsleep(true) })
   }, [wm, nextWallpaper])
 
   return (
@@ -479,6 +673,7 @@ function Desktop() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
+      onContextMenu={handleContextMenu}
     >
       <Wallpaper index={wallpaper} />
       <div className="boot-noise" style={{ opacity: 0.05 }} />
@@ -514,12 +709,30 @@ function Desktop() {
       </div>
 
       {/* Dock */}
-      <div className="absolute inset-x-0 bottom-3 z-30 flex justify-center">
+      <div className="absolute inset-x-0 bottom-3 z-30 flex justify-center" data-no-desktop-menu>
         <OSDock />
       </div>
 
+      <Notifications />
       <Spotlight open={spotlightOpen} onClose={() => setSpotlightOpen(false)} />
       <SleepOverlay asleep={asleep} onWake={wake} />
+
+      {ctxMenu && (
+        <ContextMenu
+          position={ctxMenu}
+          onClose={() => setCtxMenu(null)}
+          items={[
+            { label: "New Folder (the desktop is full)", disabled: true },
+            { label: "Get Info", action: () => wm.openApp("about") },
+            { divider: true },
+            { label: "Change Wallpaper", action: nextWallpaper },
+            { label: "Sort By: vibes ✓", disabled: true },
+            { label: "Clean Up (it's already clean)", disabled: true },
+            { divider: true },
+            { label: "Open Terminal Here", action: () => wm.openApp("terminal") },
+          ]}
+        />
+      )}
     </motion.div>
   )
 }

@@ -1,9 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
-import { Check } from "lucide-react"
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion"
+import { Check, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+
+const LAYOUT_SPRING = { type: "spring", stiffness: 420, damping: 36 } as const
 
 type Kind = "work" | "clubs" | "school"
 
@@ -197,64 +199,109 @@ function TimelineApp() {
 
         {/* Agenda grouped by year */}
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
-          {years.map((year) => (
-            <div key={year} className="mb-5">
-              <div className="sticky top-0 z-10 -mx-1 mb-2 flex items-baseline gap-2 bg-gradient-to-b from-white via-white/90 to-transparent px-1 pb-1">
-                <h3 className="text-lg font-bold tracking-tight text-neutral-900">{year}</h3>
-                <span className="font-mono text-[10px] text-neutral-400">
-                  {visible.filter((e) => e.year === year).length} events
-                </span>
-              </div>
-              <div className="space-y-1.5">
-                {visible
-                  .filter((e) => e.year === year)
-                  .map((event) => {
-                    const cal = CALENDARS.find((c) => c.kind === event.kind)!
-                    const key = `${event.role}-${event.org}`
-                    const isOpen = expanded === key
-                    return (
-                      <motion.button
-                        key={key}
-                        layout
-                        onClick={() => setExpanded(isOpen ? null : key)}
-                        className={cn(
-                          "flex w-full gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
-                          isOpen ? "bg-black/[0.045]" : "hover:bg-black/[0.03]"
-                        )}
-                      >
-                        <span
-                          className={cn("mt-0.5 w-1 shrink-0 self-stretch rounded-full", cal.bar)}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-baseline justify-between gap-3">
-                            <p className="truncate text-sm font-semibold text-neutral-900">
-                              {event.role}
-                              <span className="font-normal text-neutral-400"> · </span>
-                              <span className="font-normal text-neutral-600">{event.org}</span>
-                            </p>
-                            <span className="shrink-0 font-mono text-[10px] text-neutral-400">
-                              {event.period}
-                              {event.ongoing && (
-                                <span className="ml-1.5 inline-block size-1.5 animate-pulse rounded-full bg-red-400 align-middle" />
+          <LayoutGroup>
+            <AnimatePresence mode="popLayout" initial={false}>
+              {years.map((year) => (
+                <motion.section
+                  key={year}
+                  layout
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                  transition={LAYOUT_SPRING}
+                  className="mb-5"
+                >
+                  <motion.div
+                    layout="position"
+                    className="sticky top-0 z-10 -mx-2 mb-1.5 flex items-baseline gap-2 rounded-md bg-white/80 px-2 py-1 backdrop-blur-sm"
+                  >
+                    <h3 className="text-lg font-bold tracking-tight text-neutral-900">{year}</h3>
+                    <span className="font-mono text-[10px] text-neutral-400">
+                      {visible.filter((e) => e.year === year).length}{" "}
+                      {visible.filter((e) => e.year === year).length === 1 ? "event" : "events"}
+                    </span>
+                  </motion.div>
+                  <div className="space-y-1.5">
+                    <AnimatePresence mode="popLayout" initial={false}>
+                      {visible
+                        .filter((e) => e.year === year)
+                        .map((event) => {
+                          const cal = CALENDARS.find((c) => c.kind === event.kind)!
+                          const key = `${event.role}-${event.org}`
+                          const isOpen = expanded === key
+                          return (
+                            <motion.div
+                              key={key}
+                              layout
+                              initial={{ opacity: 0, scale: 0.97 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.13 } }}
+                              transition={LAYOUT_SPRING}
+                              className={cn(
+                                "overflow-hidden rounded-lg transition-colors",
+                                isOpen
+                                  ? "bg-white shadow-[0_2px_12px_-4px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.05]"
+                                  : "hover:bg-black/[0.03]"
                               )}
-                            </span>
-                          </div>
-                          {isOpen && (
-                            <motion.p
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              className="mt-1 text-xs leading-relaxed text-neutral-500"
                             >
-                              {event.detail}
-                            </motion.p>
-                          )}
-                        </div>
-                      </motion.button>
-                    )
-                  })}
-              </div>
-            </div>
-          ))}
+                              <button
+                                onClick={() => setExpanded(isOpen ? null : key)}
+                                className="flex w-full gap-2.5 px-2.5 py-2 text-left"
+                              >
+                                <span
+                                  className={cn(
+                                    "mt-0.5 w-1 shrink-0 self-stretch rounded-full",
+                                    cal.bar
+                                  )}
+                                />
+                                <motion.div layout="position" className="min-w-0 flex-1">
+                                  <div className="flex items-baseline justify-between gap-3">
+                                    <p className="truncate text-sm font-semibold text-neutral-900">
+                                      {event.role}
+                                      <span className="font-normal text-neutral-400"> · </span>
+                                      <span className="font-normal text-neutral-600">
+                                        {event.org}
+                                      </span>
+                                    </p>
+                                    <span className="flex shrink-0 items-center gap-1.5 font-mono text-[10px] text-neutral-400">
+                                      {event.period}
+                                      {event.ongoing && (
+                                        <span className="inline-block size-1.5 animate-pulse rounded-full bg-red-400" />
+                                      )}
+                                      <ChevronRight
+                                        className={cn(
+                                          "size-3 text-neutral-300 transition-transform duration-200",
+                                          isOpen && "rotate-90"
+                                        )}
+                                      />
+                                    </span>
+                                  </div>
+                                </motion.div>
+                              </button>
+                              <AnimatePresence initial={false}>
+                                {isOpen && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={LAYOUT_SPRING}
+                                    className="overflow-hidden"
+                                  >
+                                    <p className="px-2.5 pb-2.5 pl-6 text-xs leading-relaxed text-neutral-500">
+                                      {event.detail}
+                                    </p>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </motion.div>
+                          )
+                        })}
+                    </AnimatePresence>
+                  </div>
+                </motion.section>
+              ))}
+            </AnimatePresence>
+          </LayoutGroup>
           {visible.length === 0 && (
             <p className="py-10 text-center font-mono text-xs text-neutral-400">
               all calendars hidden — check one on the left

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useCallback, useMemo, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { animate, motion, useMotionValue, type TargetAndTransition } from "framer-motion"
 import { APPS } from "@/lib/os/apps"
 import { useWindowManager, type AppId, type Bounds } from "@/lib/os/window-manager"
@@ -15,6 +16,28 @@ const BOUNDS_SPRING = { type: "spring", stiffness: 380, damping: 34 } as const
 let cascadeCount = 0
 
 type ResizeDir = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw"
+
+// Sequoia-style edge tiling: drag to an edge → translucent preview → release
+type SnapZone = "left" | "right" | "top"
+
+function zoneBounds(zone: SnapZone): Bounds {
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const y = MENUBAR_H + 6
+  const h = vh - MENUBAR_H - DOCK_CLEARANCE - 6
+  if (zone === "top") return { x: 12, y, w: vw - 24, h }
+  if (zone === "left") return { x: 8, y, w: vw / 2 - 12, h }
+  return { x: vw / 2 + 4, y, w: vw / 2 - 12, h }
+}
+
+function detectZone(px: number, py: number): SnapZone | null {
+  const vw = window.innerWidth
+  if (vw < 640) return null
+  if (py <= MENUBAR_H + 2) return "top"
+  if (px <= 10) return "left"
+  if (px >= vw - 10) return "right"
+  return null
+}
 
 const RESIZE_HANDLES: { dir: ResizeDir; className: string }[] = [
   { dir: "n", className: "top-0 left-3 right-3 h-1.5 cursor-ns-resize" },
@@ -61,6 +84,8 @@ function OSWindow({ appId }: { appId: AppId }) {
   const prevBounds = useRef<Bounds | null>(null) // pre-maximize bounds
   const [maximized, setMaximized] = useState(false)
   const [dragging, setDragging] = useState(false)
+  const [snapZone, setSnapZone] = useState<SnapZone | null>(null)
+  const snapRef = useRef<SnapZone | null>(null)
   // Bumped after each interaction so render-time exit math reads fresh positions
   const [, setRev] = useState(0)
 
@@ -100,7 +125,7 @@ function OSWindow({ appId }: { appId: AppId }) {
     }
   }, [appId, wm, prefersReducedMotion, x, y, w, h])
 
-  // ── Dragging via the titlebar ────────────────────────────────
+  // ── Dragging via the titlebar (with edge tiling) ─────────────
   const handleTitlebarPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (e.button !== 0 || maximized) return
@@ -108,24 +133,47 @@ function OSWindow({ appId }: { appId: AppId }) {
       const el = e.currentTarget
       el.setPointerCapture(e.pointerId)
       setDragging(true)
-      const start = { px: e.clientX, py: e.clientY, x: x.get(), y: y.get() }
+      const start = { px: e.clientX, py: e.clientY, x: x.get(), y: y.get(), w: w.get(), h: h.get() }
 
       const onMove = (ev: PointerEvent) => {
         const vw = window.innerWidth
         const vh = window.innerHeight
         x.set(Math.min(Math.max(start.x + ev.clientX - start.px, -w.get() + 96), vw - 96))
         y.set(Math.min(Math.max(start.y + ev.clientY - start.py, MENUBAR_H), vh - 48))
+        const zone = detectZone(ev.clientX, ev.clientY)
+        if (zone !== snapRef.current) {
+          snapRef.current = zone
+          setSnapZone(zone)
+        }
       }
       const onUp = () => {
         el.removeEventListener("pointermove", onMove)
         el.removeEventListener("pointerup", onUp)
         setDragging(false)
-        commitBounds()
+        const zone = snapRef.current
+        snapRef.current = null
+        setSnapZone(null)
+        if (zone) {
+          const target = zoneBounds(zone)
+          const spring = prefersReducedMotion ? { duration: 0.01 } : BOUNDS_SPRING
+          animate(x, target.x, spring)
+          animate(y, target.y, spring)
+          animate(w, target.w, spring)
+          animate(h, target.h, spring)
+          if (zone === "top") {
+            // Tiling to the top behaves like zoom: green light / dbl-click restores
+            prevBounds.current = { x: start.x, y: start.y, w: start.w, h: start.h }
+            setMaximized(true)
+          }
+          setTimeout(commitBounds, 350)
+        } else {
+          commitBounds()
+        }
       }
       el.addEventListener("pointermove", onMove)
       el.addEventListener("pointerup", onUp)
     },
-    [maximized, x, y, w, commitBounds]
+    [maximized, x, y, w, h, commitBounds, prefersReducedMotion]
   )
 
   // ── Resizing from edges and corners ──────────────────────────
@@ -191,13 +239,33 @@ function OSWindow({ appId }: { appId: AppId }) {
 
   if (!entry) return null
   const AppContent = app.component
+  const previewBounds = dragging && snapZone ? zoneBounds(snapZone) : null
 
   return (
     <motion.div
       style={{ x, y, width: w, height: h, zIndex: entry.z }}
       className="pointer-events-auto fixed top-0 left-0"
       onPointerDownCapture={() => wm.focusApp(appId)}
+      data-no-desktop-menu
     >
+      {/* Snap preview (portaled out — this wrapper's transform would trap `fixed`) */}
+      {previewBounds &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <motion.div
+            initial={{ opacity: 0, scale: 0.985 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="pointer-events-none fixed z-[51] rounded-2xl border border-white/45 bg-white/15 shadow-[inset_0_0_40px_rgba(255,255,255,0.1)] backdrop-blur-[2px]"
+            style={{
+              left: previewBounds.x,
+              top: previewBounds.y,
+              width: previewBounds.w,
+              height: previewBounds.h,
+            }}
+          />,
+          document.body
+        )}
       <motion.div
         className={cn(
           "flex h-full w-full flex-col overflow-hidden rounded-2xl border bg-white/80 backdrop-blur-2xl",
