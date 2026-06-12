@@ -203,6 +203,195 @@ html[data-theme="ice-blue"],
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 40%);
 }
 
+/* ─── aryanOS dark mode ───────────────────────────────────────
+   The Desktop root gets `.dark`; light-themed app windows mark their
+   content `.app-surface`, and this layer remaps their palette to a
+   macOS-dark equivalent. Always-dark apps (Terminal, Music) skip the
+   marker so their colors pass through untouched. */
+
+.dark .app-surface .text-neutral-900 {
+  color: #f5f5f7;
+}
+.dark .app-surface .text-neutral-800 {
+  color: #e9e9eb;
+}
+.dark .app-surface .text-neutral-700 {
+  color: #d6d6da;
+}
+.dark .app-surface .text-neutral-600 {
+  color: #a8a8ae;
+}
+.dark .app-surface .text-neutral-500,
+.dark .app-surface .hover\:text-neutral-500:hover {
+  color: #98989f;
+}
+.dark .app-surface .text-neutral-400,
+.dark .app-surface .hover\:text-neutral-600:hover,
+.dark .app-surface .hover\:text-neutral-700:hover {
+  color: #7e7e85;
+}
+.dark .app-surface .text-neutral-300 {
+  color: #5f5f66;
+}
+.dark .app-surface .placeholder-neutral-400::placeholder {
+  color: #76767c;
+}
+
+.dark .app-surface .border-black\/\[0\.04\] {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.dark .app-surface .border-black\/\[0\.05\] {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+.dark .app-surface .border-black\/\[0\.06\] {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.dark .app-surface .border-black\/\[0\.08\] {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.dark .app-surface .border-black\/\[0\.1\] {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.dark .app-surface .border-neutral-300 {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.dark .app-surface .ring-black\/\[0\.05\] {
+  --tw-ring-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .app-surface .bg-black\/\[0\.02\] {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+.dark .app-surface .bg-black\/\[0\.025\],
+.dark .app-surface .hover\:bg-black\/\[0\.025\]:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+.dark .app-surface .hover\:bg-black\/\[0\.03\]:hover {
+  background-color: rgba(255, 255, 255, 0.045);
+}
+.dark .app-surface .bg-black\/\[0\.04\],
+.dark .app-surface .hover\:bg-black\/\[0\.04\]:hover {
+  background-color: rgba(255, 255, 255, 0.055);
+}
+.dark .app-surface .bg-black\/\[0\.05\],
+.dark .app-surface .hover\:bg-black\/\[0\.05\]:hover {
+  background-color: rgba(255, 255, 255, 0.065);
+}
+.dark .app-surface .bg-black\/\[0\.06\],
+.dark .app-surface .hover\:bg-black\/\[0\.06\]:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.dark .app-surface .bg-black\/\[0\.07\] {
+  background-color: rgba(255, 255, 255, 0.09);
+}
+.dark .app-surface .bg-black\/\[0\.08\],
+.dark .app-surface .hover\:bg-black\/\[0\.08\]:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.dark .app-surface .hover\:bg-black\/\[0\.1\]:hover {
+  background-color: rgba(255, 255, 255, 0.13);
+}
+.dark .app-surface .hover\:bg-black\/\[0\.12\]:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark .app-surface .bg-white {
+  background-color: #2c2c30;
+}
+.dark .app-surface .bg-white\/60 {
+  background-color: rgba(44, 44, 48, 0.6);
+}
+.dark .app-surface .bg-white\/70 {
+  background-color: rgba(44, 44, 48, 0.7);
+}
+.dark .app-surface .bg-white\/80 {
+  background-color: rgba(44, 44, 48, 0.8);
+}
+.dark .app-surface .bg-white\/95 {
+  background-color: rgba(44, 44, 48, 0.95);
+}
+.dark .app-surface .bg-neutral-100,
+.dark .app-surface .bg-neutral-100\/80 {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.dark .app-surface .bg-neutral-300 {
+  background-color: #5a5a60;
+}
+.dark .app-surface .bg-neutral-300\/70 {
+  background-color: rgba(18, 18, 22, 0.7);
+}
+.dark .app-surface .bg-neutral-400 {
+  background-color: #6e6e74;
+}
+
+.dark .app-surface .bg-amber-100\/80 {
+  background-color: rgba(214, 170, 20, 0.22);
+}
+.dark .app-surface .bg-amber-50\/60 {
+  background-color: rgba(150, 110, 20, 0.18);
+}
+.dark .app-surface .bg-blue-50\/80 {
+  background-color: rgba(60, 110, 240, 0.18);
+}
+.dark .app-surface .bg-blue-50\/60,
+.dark .app-surface .hover\:bg-blue-50:hover {
+  background-color: rgba(60, 110, 240, 0.16);
+}
+.dark .app-surface .hover\:bg-blue-100:hover {
+  background-color: rgba(60, 110, 240, 0.28);
+}
+.dark .app-surface .hover\:bg-blue-500\/10:hover {
+  background-color: rgba(80, 140, 255, 0.14);
+}
+.dark .app-surface .border-blue-200 {
+  border-color: rgba(90, 140, 255, 0.4);
+}
+.dark .app-surface .border-blue-300,
+.dark .app-surface .focus\:border-blue-300:focus {
+  border-color: rgba(100, 150, 255, 0.55);
+}
+.dark .app-surface .bg-emerald-50 {
+  background-color: rgba(20, 140, 70, 0.22);
+}
+.dark .app-surface .bg-violet-50 {
+  background-color: rgba(130, 90, 230, 0.2);
+}
+.dark .app-surface .text-violet-600 {
+  color: #b8a3f7;
+}
+.dark .app-surface .text-emerald-600 {
+  color: #4ade80;
+}
+.dark .app-surface .text-blue-600 {
+  color: #6aa2ff;
+}
+.dark .app-surface .text-\[\#2563eb\] {
+  color: #5e9bff;
+}
+.dark .app-surface .text-violet-500 {
+  color: #a98ef5;
+}
+
+/* ─── Dark-mode toggle: circular reveal via the View Transitions API.
+   The new theme expands as a circle from the Control Center toggle
+   (--reveal-x/--reveal-y are set at click time). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  animation: theme-reveal 0.6s cubic-bezier(0.3, 0, 0.2, 1);
+}
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0px at var(--reveal-x, 95vw) var(--reveal-y, 4vh));
+  }
+  to {
+    clip-path: circle(160vmax at var(--reveal-x, 95vw) var(--reveal-y, 4vh));
+  }
+}
+
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *,

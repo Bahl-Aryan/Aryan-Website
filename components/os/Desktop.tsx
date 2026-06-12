@@ -1,8 +1,23 @@
 "use client"
 
 import React, { useCallback, useEffect, useState } from "react"
+import { flushSync } from "react-dom"
 import { AnimatePresence, motion } from "framer-motion"
-import { Battery, FileText, Folder, Search, Wifi, X } from "lucide-react"
+import {
+  Battery,
+  Bluetooth,
+  FileText,
+  Folder,
+  Moon,
+  Music2,
+  Play,
+  Radar,
+  Search,
+  SunMedium,
+  Volume2,
+  Wifi,
+  X,
+} from "lucide-react"
 import { OSDock } from "@/components/os/Dock"
 import { OSWindow } from "@/components/os/Window"
 import { MacAppIcon } from "@/components/os/MacIcons"
@@ -10,6 +25,7 @@ import { Spotlight } from "@/components/os/Spotlight"
 import { APP_ORDER, APPS } from "@/lib/os/apps"
 import { useWindowManager, type AppId } from "@/lib/os/window-manager"
 import { deliverMessage } from "@/lib/os/message-bus"
+import { trashStore } from "@/lib/os/trash-store"
 import { useReducedMotionPref } from "@/lib/useReducedMotionPref"
 import { cn } from "@/lib/utils"
 
@@ -103,6 +119,21 @@ function MenuDropdown({
   onClose: () => void
   align?: "left" | "right"
 }) {
+  // Classic macOS: the chosen item blinks twice before the menu closes
+  const [flashing, setFlashing] = useState<number | null>(null)
+  const isFlashing = flashing !== null
+
+  const select = (index: number, item: Extract<MenuItem, { divider?: false }>) => {
+    if (isFlashing) return
+    setFlashing(index)
+    setTimeout(() => setFlashing(null), 70)
+    setTimeout(() => setFlashing(index), 140)
+    setTimeout(() => {
+      item.action?.()
+      onClose()
+    }, 240)
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -4 }}
@@ -110,26 +141,27 @@ function MenuDropdown({
       exit={{ opacity: 0, transition: { duration: 0.1 } }}
       transition={{ duration: 0.12 }}
       className={cn(
-        "absolute top-full z-50 mt-1.5 min-w-52 rounded-xl border border-white/25 bg-white/75 p-1 shadow-[0_18px_50px_-10px_rgba(0,0,0,0.45)] backdrop-blur-2xl",
+        "absolute top-full z-50 mt-1.5 min-w-52 rounded-xl border border-black/[0.08] bg-[#f3f3f6] p-1 shadow-[0_18px_50px_-10px_rgba(0,0,0,0.45)] dark:border-white/[0.12] dark:bg-[#2b2b2f]",
         align === "left" ? "left-0" : "right-0"
       )}
     >
       {items.map((item, i) =>
         item.divider ? (
-          <div key={i} className="mx-2 my-1 h-px bg-black/[0.08]" />
+          <div key={i} className="mx-2 my-1 h-px bg-black/[0.08] dark:bg-white/[0.1]" />
         ) : (
           <button
             key={i}
             disabled={item.disabled}
-            onClick={() => {
-              item.action?.()
-              onClose()
-            }}
+            onClick={() => select(i, item)}
             className={cn(
               "flex w-full items-center justify-between gap-6 rounded-lg px-2.5 py-1 text-left text-[13px]",
               item.disabled
-                ? "cursor-default text-neutral-400"
-                : "text-neutral-800 hover:bg-[#2563eb] hover:text-white"
+                ? "cursor-default text-neutral-400 dark:text-neutral-500"
+                : isFlashing
+                  ? flashing === i
+                    ? "bg-[#2563eb] text-white"
+                    : "text-neutral-800 dark:text-neutral-200"
+                  : "text-neutral-800 hover:bg-[#2563eb] hover:text-white dark:text-neutral-200"
             )}
           >
             <span>{item.label}</span>
@@ -143,14 +175,243 @@ function MenuDropdown({
   )
 }
 
+// ─────────────────────────────────────────────────────────────
+// Control Center — the real macOS layout, with a working
+// dark-mode toggle and display-brightness slider.
+// ─────────────────────────────────────────────────────────────
+// macOS-style slider: white fill follows the knob, icon lives inside the track
+function CCSlider({
+  value,
+  onChange,
+  icon: Icon,
+  label,
+  min = 0,
+}: {
+  value: number
+  onChange: (value: number) => void
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  min?: number
+}) {
+  const trackRef = React.useRef<HTMLDivElement>(null)
+
+  const setFromClientX = useCallback(
+    (clientX: number) => {
+      const rect = trackRef.current?.getBoundingClientRect()
+      if (!rect) return
+      const pct = Math.round(((clientX - rect.left) / rect.width) * 100)
+      onChange(Math.min(100, Math.max(min, pct)))
+    },
+    [onChange, min]
+  )
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setFromClientX(e.clientX)
+    const onMove = (ev: PointerEvent) => setFromClientX(ev.clientX)
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove)
+      window.removeEventListener("pointerup", onUp)
+    }
+    window.addEventListener("pointermove", onMove)
+    window.addEventListener("pointerup", onUp)
+  }
+
+  return (
+    <div
+      ref={trackRef}
+      role="slider"
+      aria-label={label}
+      aria-valuenow={value}
+      aria-valuemin={min}
+      aria-valuemax={100}
+      tabIndex={0}
+      onPointerDown={handlePointerDown}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") onChange(Math.min(100, value + 5))
+        if (e.key === "ArrowLeft" || e.key === "ArrowDown") onChange(Math.max(min, value - 5))
+      }}
+      className="relative h-[22px] w-full cursor-pointer touch-none overflow-hidden rounded-full bg-black/[0.12] shadow-[inset_0_0.5px_2px_rgba(0,0,0,0.12)] outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 dark:bg-white/[0.14] dark:shadow-[inset_0_0.5px_2px_rgba(0,0,0,0.4)]"
+    >
+      {/* white fill, knob is its rounded leading edge */}
+      <div
+        className="absolute inset-y-0 left-0 rounded-full bg-white"
+        style={{ width: `max(${value}%, 22px)` }}
+      />
+      {/* knob definition: a shadowed circle sitting at the fill edge */}
+      <div
+        className="absolute top-1/2 size-[20px] -translate-y-1/2 rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.35),0_0_0_0.5px_rgba(0,0,0,0.06)]"
+        style={{ left: `calc(max(${value}%, 22px) - 21px)` }}
+      />
+      <Icon className="pointer-events-none absolute top-1/2 left-[5px] size-3 -translate-y-1/2 text-neutral-500" />
+    </div>
+  )
+}
+
+function CCTile({ className, children }: { className?: string; children: React.ReactNode }) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl bg-black/[0.05] p-2.5 shadow-[inset_0_0_0_0.5px_rgba(0,0,0,0.06)] dark:bg-white/[0.08] dark:shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.08)]",
+        className
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
+function ControlCenter({
+  theme,
+  onToggleTheme,
+  brightness,
+  onBrightness,
+}: {
+  theme: "light" | "dark"
+  onToggleTheme: (x: number, y: number) => void
+  brightness: number
+  onBrightness: (value: number) => void
+}) {
+  const { openApp } = useWindowManager()
+  const [volume, setVolume] = useState(60)
+  const isDark = theme === "dark"
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.1 } }}
+      transition={{ duration: 0.15 }}
+      className="absolute top-full right-0 z-50 mt-1.5 w-[300px] rounded-2xl border border-black/[0.08] bg-[#f0f0f3] p-2.5 text-neutral-800 shadow-[0_22px_60px_-12px_rgba(0,0,0,0.5)] dark:border-white/[0.12] dark:bg-[#222226] dark:text-neutral-100"
+    >
+      <div className="grid grid-cols-2 gap-2">
+        {/* Connectivity */}
+        <CCTile className="space-y-2.5">
+          {[
+            { icon: Wifi, label: "Wi-Fi", detail: "probably-fine-5G", on: true },
+            { icon: Bluetooth, label: "Bluetooth", detail: "On", on: true },
+            { icon: Radar, label: "AirDrop", detail: "it's a website", on: false },
+          ].map(({ icon: Icon, label, detail, on }) => (
+            <div key={label} className="flex items-center gap-2">
+              <span
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-full",
+                  on
+                    ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white"
+                    : "bg-black/[0.12] text-neutral-500 dark:bg-white/[0.14] dark:text-neutral-400"
+                )}
+              >
+                <Icon className="size-3.5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[12px] leading-tight font-semibold">{label}</span>
+                <span className="block truncate text-[10px] leading-tight text-neutral-500 dark:text-neutral-400">
+                  {detail}
+                </span>
+              </span>
+            </div>
+          ))}
+        </CCTile>
+
+        <div className="flex flex-col gap-2">
+          {/* Focus */}
+          <CCTile className="flex items-center gap-2">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-black/[0.12] text-neutral-500 dark:bg-white/[0.14] dark:text-neutral-300">
+              <Moon className="size-3.5 fill-current" />
+            </span>
+            <span>
+              <span className="block text-[12px] leading-tight font-semibold">Focus</span>
+              <span className="block text-[10px] leading-tight text-neutral-500 dark:text-neutral-400">
+                shipping
+              </span>
+            </span>
+          </CCTile>
+
+          {/* Dark mode — the functional one */}
+          <button onClick={(e) => onToggleTheme(e.clientX, e.clientY)} className="flex-1 text-left">
+            <CCTile
+              className={cn(
+                "flex h-full flex-col items-start justify-between transition-colors",
+                isDark && "bg-white text-neutral-900 dark:bg-white dark:text-neutral-900"
+              )}
+            >
+              {isDark ? (
+                <Moon className="size-4 fill-fuchsia-500 text-fuchsia-500" />
+              ) : (
+                <SunMedium className="size-4 text-neutral-500" />
+              )}
+              <span
+                className={cn(
+                  "text-[11px] leading-tight font-semibold",
+                  isDark && "text-fuchsia-500"
+                )}
+              >
+                Dark Mode
+                <span className="block text-[10px] font-normal opacity-60">
+                  {isDark ? "On" : "Off"}
+                </span>
+              </span>
+            </CCTile>
+          </button>
+        </div>
+      </div>
+
+      {/* Display */}
+      <CCTile className="mt-2">
+        <p className="mb-1.5 px-0.5 text-[12px] font-semibold">Display</p>
+        <CCSlider
+          value={brightness}
+          onChange={onBrightness}
+          icon={SunMedium}
+          label="Display brightness"
+          min={30}
+        />
+      </CCTile>
+
+      {/* Sound (the slider works; the audio is imaginary) */}
+      <CCTile className="mt-2">
+        <p className="mb-1.5 px-0.5 text-[12px] font-semibold">Sound</p>
+        <CCSlider value={volume} onChange={setVolume} icon={Volume2} label="Volume" />
+      </CCTile>
+
+      {/* Now playing → opens Music */}
+      <button onClick={() => openApp("music")} className="mt-2 w-full text-left">
+        <CCTile className="flex items-center gap-2.5 transition-colors hover:bg-black/[0.08] dark:hover:bg-white/[0.12]">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#fc5c7d] to-[#fa2d48] text-white">
+            <Music2 className="size-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[12px] leading-tight font-semibold">
+              Not how it seems
+            </span>
+            <span className="block truncate text-[10px] leading-tight text-neutral-500 dark:text-neutral-400">
+              CapzLock — open Music
+            </span>
+          </span>
+          <Play className="size-4 fill-current text-neutral-500 dark:text-neutral-300" />
+        </CCTile>
+      </button>
+    </motion.div>
+  )
+}
+
 function MenuBar({
   onSpotlight,
   onSleep,
   onNextWallpaper,
+  theme,
+  onToggleTheme,
+  brightness,
+  onBrightness,
 }: {
   onSpotlight: () => void
   onSleep: () => void
   onNextWallpaper: () => void
+  theme: "light" | "dark"
+  onToggleTheme: (x: number, y: number) => void
+  brightness: number
+  onBrightness: (value: number) => void
 }) {
   const wm = useWindowManager()
   const [now, setNow] = useState<Date | null>(null)
@@ -242,11 +503,21 @@ function MenuBar({
     ],
   }
 
+  // Hover-switching is a left-menu behavior (File → Edit → View…); the
+  // right-side status items (battery, wifi, control center) open on click only.
+  const LEFT_MENUS = ["logo", "File", "Edit", "View", "Go", "Window", "Help"]
+
   const menuButton = (name: string, display: React.ReactNode, align: "left" | "right" = "left") => (
     <div key={name} className="relative flex h-full items-center">
       <button
         onClick={() => setOpenMenu(openMenu === name ? null : name)}
-        onMouseEnter={() => openMenu && openMenu !== name && setOpenMenu(name)}
+        onMouseEnter={() =>
+          openMenu &&
+          openMenu !== name &&
+          LEFT_MENUS.includes(openMenu) &&
+          LEFT_MENUS.includes(name) &&
+          setOpenMenu(name)
+        }
         className={cn(
           "flex h-6 items-center rounded px-2 text-[13px] leading-none transition-colors",
           openMenu === name ? "bg-white/25" : "hover:bg-white/15"
@@ -265,7 +536,7 @@ function MenuBar({
       {/* click-away layer while a menu is open */}
       {openMenu && <div className="fixed inset-0 z-40" onClick={close} />}
       <div
-        className="absolute inset-x-0 top-0 z-40 flex h-8 items-stretch justify-between bg-white/10 px-2 text-white backdrop-blur-xl select-none"
+        className="absolute inset-x-0 top-0 z-40 flex h-8 items-stretch justify-between bg-white/10 px-2 text-white backdrop-blur-xl select-none dark:bg-black/25"
         data-no-desktop-menu
       >
         <div className="flex items-stretch gap-0.5">
@@ -293,6 +564,34 @@ function MenuBar({
             <Wifi className="size-4 text-white/90" aria-label="Wi-Fi" />,
             "right"
           )}
+          {/* Control Center */}
+          <div className="relative flex h-full items-center">
+            <button
+              onClick={() => setOpenMenu(openMenu === "control" ? null : "control")}
+              aria-label="Control Center"
+              className={cn(
+                "flex h-6 items-center rounded px-2 transition-colors",
+                openMenu === "control" ? "bg-white/25" : "hover:bg-white/15"
+              )}
+            >
+              <svg viewBox="0 0 18 18" className="size-[15px] text-white/90" fill="currentColor">
+                <rect x="1" y="2.5" width="16" height="5.5" rx="2.75" fillOpacity="0.95" />
+                <circle cx="5" cy="5.25" r="2" fill="#00000055" />
+                <rect x="1" y="10" width="16" height="5.5" rx="2.75" fillOpacity="0.95" />
+                <circle cx="13" cy="12.75" r="2" fill="#00000055" />
+              </svg>
+            </button>
+            <AnimatePresence>
+              {openMenu === "control" && (
+                <ControlCenter
+                  theme={theme}
+                  onToggleTheme={onToggleTheme}
+                  brightness={brightness}
+                  onBrightness={onBrightness}
+                />
+              )}
+            </AnimatePresence>
+          </div>
           <button
             onClick={onSpotlight}
             aria-label="Spotlight"
@@ -340,7 +639,7 @@ function ClockWidget() {
   const hourDeg = hours * 30 + minutes * 0.5
 
   return (
-    <div className="flex size-36 flex-col items-center justify-center rounded-[24px] border border-white/20 bg-black/30 shadow-[0_12px_36px_-12px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+    <div className="group flex size-36 flex-col items-center justify-center rounded-[24px] border border-white/20 bg-black/30 shadow-[0_12px_36px_-12px_rgba(0,0,0,0.5)] backdrop-blur-xl">
       <svg viewBox="0 0 100 100" className="size-24">
         <circle cx="50" cy="50" r="46" fill="rgba(255,255,255,0.95)" />
         {Array.from({ length: 12 }, (_, i) => (
@@ -387,7 +686,16 @@ function ClockWidget() {
         />
         <circle cx="50" cy="50" r="2.5" fill="#fa2d48" />
       </svg>
-      <span className="mt-0.5 text-[10px] font-medium text-white/80">san francisco</span>
+      <span className="mt-0.5 text-[10px] font-medium text-white/80 tabular-nums">
+        <span className="group-hover:hidden">san francisco</span>
+        <span className="hidden group-hover:inline">
+          {now?.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit",
+          })}
+        </span>
+      </span>
     </div>
   )
 }
@@ -404,7 +712,7 @@ function CalendarWidget() {
 
   if (!today)
     return (
-      <div className="size-36 rounded-[24px] border border-white/20 bg-white/80 backdrop-blur-xl" />
+      <div className="size-36 rounded-[24px] border border-white/20 bg-white/80 backdrop-blur-xl dark:bg-[#2b2b2f]/85" />
     )
 
   const year = today.getFullYear()
@@ -419,14 +727,14 @@ function CalendarWidget() {
   return (
     <button
       onClick={() => openApp("timeline")}
-      className="size-36 rounded-[24px] border border-white/20 bg-white/85 p-3 text-left shadow-[0_12px_36px_-12px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-transform hover:scale-[1.03]"
+      className="size-36 rounded-[24px] border border-white/20 bg-white/85 p-3 text-left shadow-[0_12px_36px_-12px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-transform hover:scale-[1.03] dark:bg-[#2b2b2f]/85"
     >
       <p className="text-[10px] font-bold tracking-wide text-[#fa2d48] uppercase">
         {today.toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric" })}
       </p>
       <div className="mt-1 grid grid-cols-7 gap-y-px text-center text-[7.5px] leading-[11px]">
         {WEEKDAYS.map((d, i) => (
-          <span key={i} className="font-semibold text-neutral-400">
+          <span key={i} className="font-semibold text-neutral-400 dark:text-neutral-500">
             {d}
           </span>
         ))}
@@ -434,7 +742,7 @@ function CalendarWidget() {
           <span
             key={i}
             className={cn(
-              "text-neutral-600",
+              "text-neutral-600 dark:text-neutral-300",
               day === today.getDate() &&
                 "mx-auto flex size-[11px] items-center justify-center rounded-full bg-[#fa2d48] font-bold text-white"
             )}
@@ -492,11 +800,11 @@ function ContextMenu({
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.1 }}
         style={style}
-        className="fixed z-[59] min-w-52 rounded-xl border border-white/25 bg-white/75 p-1 shadow-[0_18px_50px_-10px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
+        className="fixed z-[59] min-w-52 rounded-xl border border-black/[0.08] bg-[#f3f3f6] p-1 shadow-[0_18px_50px_-10px_rgba(0,0,0,0.45)] dark:border-white/[0.12] dark:bg-[#2b2b2f]"
       >
         {items.map((item, i) =>
           item.divider ? (
-            <div key={i} className="mx-2 my-1 h-px bg-black/[0.08]" />
+            <div key={i} className="mx-2 my-1 h-px bg-black/[0.08] dark:bg-white/[0.1]" />
           ) : (
             <button
               key={i}
@@ -508,8 +816,8 @@ function ContextMenu({
               className={cn(
                 "flex w-full items-center justify-between gap-6 rounded-lg px-2.5 py-1 text-left text-[13px]",
                 item.disabled
-                  ? "cursor-default text-neutral-400"
-                  : "text-neutral-800 hover:bg-[#2563eb] hover:text-white"
+                  ? "cursor-default text-neutral-400 dark:text-neutral-500"
+                  : "text-neutral-800 hover:bg-[#2563eb] hover:text-white dark:text-neutral-200"
               )}
             >
               {item.label}
@@ -533,7 +841,7 @@ type Notice = {
 }
 
 function Notifications() {
-  const { openApp } = useWindowManager()
+  const { openApp, requestAttention } = useWindowManager()
   const [notices, setNotices] = useState<Notice[]>([])
   const dismiss = useCallback((id: number) => {
     setNotices((prev) => prev.filter((n) => n.id !== id))
@@ -546,17 +854,26 @@ function Notifications() {
       timers.push(setTimeout(() => dismiss(notice.id), ttl))
     }
 
+    // Each notification fires once per browser, not once per page load
+    const once = (key: string, fire: () => void) => {
+      if (localStorage.getItem(key)) return
+      localStorage.setItem(key, "1")
+      fire()
+    }
+
     timers.push(
       setTimeout(
         () =>
-          push(
-            {
-              id: 1,
-              appId: "about",
-              title: "Welcome to aryanOS",
-              body: "poke around — nothing here can break. probably.",
-            },
-            8000
+          once("aryanos-welcomed", () =>
+            push(
+              {
+                id: 1,
+                appId: "about",
+                title: "Welcome to aryanOS",
+                body: "poke around — nothing here can break. probably.",
+              },
+              8000
+            )
           ),
         2200
       )
@@ -564,34 +881,38 @@ function Notifications() {
     timers.push(
       setTimeout(
         () =>
-          push(
-            {
-              id: 2,
-              appId: "contact",
-              title: "Aryan Bahl",
-              body: "in sf? let's grab a coffee ☕",
-              actions: [
-                {
-                  label: "Reply",
-                  onClick: () => {
-                    // Deliver the text into the Messages thread, then open it
-                    deliverMessage("in sf? let's grab a coffee ☕")
-                    openApp("contact")
+          once("aryanos-coffee-invited", () => {
+            // Messages bounces in the dock until the "text" is read
+            requestAttention("contact")
+            push(
+              {
+                id: 2,
+                appId: "contact",
+                title: "Aryan Bahl",
+                body: "in sf? let's grab a coffee ☕",
+                actions: [
+                  {
+                    label: "Reply",
+                    onClick: () => {
+                      // Deliver the text into the Messages thread, then open it
+                      deliverMessage("in sf? let's grab a coffee ☕")
+                      openApp("contact")
+                    },
                   },
-                },
-                {
-                  label: "Accept",
-                  onClick: () => window.open("mailto:bahlaryan@gmail.com?subject=coffee%3F"),
-                },
-              ],
-            },
-            18000
-          ),
-        45000
+                  {
+                    label: "Accept",
+                    onClick: () => window.open("mailto:bahlaryan@gmail.com?subject=coffee%3F"),
+                  },
+                ],
+              },
+              18000
+            )
+          }),
+        30000
       )
     )
     return () => timers.forEach(clearTimeout)
-  }, [dismiss, openApp])
+  }, [dismiss, openApp, requestAttention])
 
   return (
     <div className="absolute top-10 right-3 z-[55] flex w-[330px] flex-col gap-2">
@@ -603,20 +924,24 @@ function Notifications() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 90, transition: { duration: 0.2 } }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            className="group/notice rounded-2xl border border-white/30 bg-white/70 p-3 shadow-[0_14px_40px_-10px_rgba(0,0,0,0.4)] backdrop-blur-2xl"
+            className="group/notice rounded-2xl border border-white/30 bg-white/80 p-3 shadow-[0_14px_40px_-10px_rgba(0,0,0,0.4)] backdrop-blur-2xl dark:border-white/[0.12] dark:bg-[#2b2b2f]/90"
           >
             <div className="flex items-start gap-2.5">
               <div className="size-8 shrink-0">
                 <MacAppIcon appId={notice.appId} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-neutral-800">{notice.title}</p>
-                <p className="mt-0.5 text-xs leading-snug text-neutral-600">{notice.body}</p>
+                <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-100">
+                  {notice.title}
+                </p>
+                <p className="mt-0.5 text-xs leading-snug text-neutral-600 dark:text-neutral-400">
+                  {notice.body}
+                </p>
               </div>
               <button
                 onClick={() => dismiss(notice.id)}
                 aria-label="Dismiss notification"
-                className="hidden rounded-full p-0.5 text-neutral-400 group-hover/notice:block hover:bg-black/[0.06]"
+                className="hidden rounded-full p-0.5 text-neutral-400 group-hover/notice:block hover:bg-black/[0.06] dark:hover:bg-white/[0.1]"
               >
                 <X className="size-3.5" />
               </button>
@@ -630,7 +955,7 @@ function Notifications() {
                       action.onClick()
                       dismiss(notice.id)
                     }}
-                    className="rounded-lg bg-black/[0.06] px-3 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-black/[0.12]"
+                    className="rounded-lg bg-black/[0.06] px-3 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-black/[0.12] dark:bg-white/[0.1] dark:text-neutral-200 dark:hover:bg-white/[0.16]"
                   >
                     {action.label}
                   </button>
@@ -671,30 +996,86 @@ function FileGlyph({ kind }: { kind: "pdf" | "txt" | "folder" }) {
 }
 
 function DesktopIcons() {
-  const { openApp } = useWindowManager()
+  const wm = useWindowManager()
+  const [files, setFiles] = useState(DESKTOP_FILES)
+
+  // Files restored from the Trash reappear on the desktop
+  useEffect(() => {
+    return trashStore.onRestore((file) => setFiles((prev) => [...prev, file]))
+  }, [])
+
+  const handleDragEnd = (file: (typeof DESKTOP_FILES)[number], point: { x: number; y: number }) => {
+    const rect = wm.getDockIconRect("trash")
+    if (
+      rect &&
+      point.x >= rect.left - 14 &&
+      point.x <= rect.right + 14 &&
+      point.y >= rect.top - 14 &&
+      point.y <= rect.bottom + 14
+    ) {
+      trashStore.trash(file)
+      setFiles((prev) => prev.filter((f) => f.name !== file.name))
+      wm.requestAttention("trash")
+    }
+  }
 
   return (
     <div className="absolute top-12 right-4 z-0 flex flex-col items-end gap-4">
-      {DESKTOP_FILES.map((file) => (
-        <motion.button
-          key={file.name}
-          whileHover={{ scale: 1.06 }}
-          whileTap={{ scale: 0.94 }}
-          onClick={(e) => {
-            e.stopPropagation()
-            openApp(file.appId)
-          }}
-          className="group flex w-20 flex-col items-center gap-1"
-        >
-          <div className="rounded-lg p-1.5 transition-colors group-hover:bg-white/20">
-            <FileGlyph kind={file.kind} />
-          </div>
-          <span className="max-w-full truncate rounded px-1.5 py-px text-[11px] font-medium text-white transition-colors [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] group-hover:bg-[#2563eb] group-hover:[text-shadow:none]">
-            {file.name}
-          </span>
-        </motion.button>
-      ))}
+      <AnimatePresence>
+        {files.map((file) => (
+          <DesktopIconButton
+            key={file.name}
+            file={file}
+            onOpen={() => wm.openApp(file.appId)}
+            onDragEnd={(point) => handleDragEnd(file, point)}
+          />
+        ))}
+      </AnimatePresence>
     </div>
+  )
+}
+
+function DesktopIconButton({
+  file,
+  onOpen,
+  onDragEnd,
+}: {
+  file: (typeof DESKTOP_FILES)[number]
+  onOpen: () => void
+  onDragEnd: (point: { x: number; y: number }) => void
+}) {
+  // framer can fire onTap after a drag; suppress opens that follow one
+  const draggedRef = React.useRef(false)
+
+  return (
+    <motion.button
+      drag
+      dragMomentum={false}
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.94 }}
+      whileDrag={{ scale: 1.1, zIndex: 60 }}
+      exit={{ opacity: 0, scale: 0.3, transition: { duration: 0.25 } }}
+      onDragStart={() => {
+        draggedRef.current = true
+      }}
+      onDragEnd={(_, info) => {
+        onDragEnd(info.point)
+        setTimeout(() => {
+          draggedRef.current = false
+        }, 0)
+      }}
+      onTap={() => {
+        if (!draggedRef.current) onOpen()
+      }}
+      className="group flex w-20 cursor-grab flex-col items-center gap-1 active:cursor-grabbing"
+    >
+      <div className="rounded-lg p-1.5 transition-colors group-hover:bg-white/20">
+        <FileGlyph kind={file.kind} />
+      </div>
+      <span className="max-w-full truncate rounded px-1.5 py-px text-[11px] font-medium text-white transition-colors [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] group-hover:bg-[#2563eb] group-hover:[text-shadow:none]">
+        {file.name}
+      </span>
+    </motion.button>
   )
 }
 
@@ -797,6 +1178,35 @@ function Desktop() {
   const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(
     null
   )
+  const [theme, setTheme] = useState<"light" | "dark">("light")
+  const [brightness, setBrightness] = useState(100)
+
+  // Restore saved appearance
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if (localStorage.getItem("aryanos-theme") === "dark") setTheme("dark")
+    }, 0)
+    return () => clearTimeout(id)
+  }, [])
+
+  const toggleTheme = useCallback((x: number, y: number) => {
+    const apply = () =>
+      setTheme((prev) => {
+        const next = prev === "light" ? "dark" : "light"
+        localStorage.setItem("aryanos-theme", next)
+        return next
+      })
+
+    // Circular reveal from the toggle, where the browser supports it
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => void }
+    if (doc.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.documentElement.style.setProperty("--reveal-x", `${x}px`)
+      document.documentElement.style.setProperty("--reveal-y", `${y}px`)
+      doc.startViewTransition(() => flushSync(apply))
+    } else {
+      apply()
+    }
+  }, [])
   const toggleSpotlight = useCallback(() => setSpotlightOpen((s) => !s), [])
   const wake = useCallback(() => setAsleep(false), [])
   useShortcuts(toggleSpotlight)
@@ -838,7 +1248,7 @@ function Desktop() {
 
   return (
     <motion.div
-      className="absolute inset-0 overflow-hidden"
+      className={cn("absolute inset-0 overflow-hidden", theme === "dark" && "dark")}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
@@ -846,11 +1256,21 @@ function Desktop() {
       onPointerDown={handleDesktopPointerDown}
     >
       <Wallpaper index={wallpaper} />
+      {/* Dark mode dims the wallpaper a touch */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 bg-black"
+        animate={{ opacity: theme === "dark" ? 0.32 : 0 }}
+        transition={{ duration: 0.5 }}
+      />
       <div className="boot-noise" style={{ opacity: 0.05 }} />
       <MenuBar
         onSpotlight={toggleSpotlight}
         onSleep={() => setAsleep(true)}
         onNextWallpaper={nextWallpaper}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        brightness={brightness}
+        onBrightness={setBrightness}
       />
       <DesktopWidgets />
       <DesktopIcons />
@@ -896,6 +1316,14 @@ function Desktop() {
       <div className="absolute inset-x-0 bottom-3 z-30 flex justify-center" data-no-desktop-menu>
         <OSDock />
       </div>
+
+      {/* Display brightness (Control Center slider) — dims everything below the menu bar */}
+      {brightness < 100 && (
+        <div
+          className="pointer-events-none absolute inset-0 z-[35] bg-black"
+          style={{ opacity: ((100 - brightness) / 100) * 0.65 }}
+        />
+      )}
 
       <Notifications />
       <Spotlight open={spotlightOpen} onClose={() => setSpotlightOpen(false)} />

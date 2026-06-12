@@ -20,6 +20,7 @@ export type AppDefinition = {
   component: ComponentType
   defaultSize: { w: number; h: number }
   minSize: { w: number; h: number }
+  alwaysDark?: boolean // app styles itself dark (Terminal, Music) — skip the dark-mode remap
 }
 
 export const APPS: Record<AppId, AppDefinition> = {
@@ -94,6 +95,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     component: TerminalApp,
     defaultSize: { w: 660, h: 440 },
     minSize: { w: 420, h: 300 },
+    alwaysDark: true,
   },
   trash: {
     id: "trash",
@@ -121,6 +123,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     component: MusicApp,
     defaultSize: { w: 760, h: 580 },
     minSize: { w: 420, h: 380 },
+    alwaysDark: true,
   },
 }
 

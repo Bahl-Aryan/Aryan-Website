@@ -20,8 +20,9 @@ function RunningDot({ appId }: { appId: AppId }) {
 }
 
 function DockApp({ appId, index }: { appId: AppId; index: number }) {
-  const { openApp, registerDockIcon, windows } = useWindowManager()
+  const { openApp, registerDockIcon, windows, attentionApps } = useWindowManager()
   const [bouncing, setBouncing] = useState(false)
+  const needsAttention = attentionApps.includes(appId)
 
   const launch = () => {
     // Bounce like a launching mac app (only when it wasn't already open)
@@ -42,15 +43,21 @@ function DockApp({ appId, index }: { appId: AppId; index: number }) {
       <motion.div
         className="size-full"
         initial={{ opacity: 0, scale: 0.4, y: 16 }}
+        whileTap={{ scale: 0.86 }}
         animate={
-          bouncing
-            ? { opacity: 1, scale: 1, y: [0, -22, 0, -10, 0] }
-            : { opacity: 1, scale: 1, y: 0 }
+          needsAttention
+            ? // Attention bounce: keeps hopping until the app is opened
+              { opacity: 1, scale: 1, y: [0, -20, 0] }
+            : bouncing
+              ? { opacity: 1, scale: 1, y: [0, -22, 0, -10, 0] }
+              : { opacity: 1, scale: 1, y: 0 }
         }
         transition={
-          bouncing
-            ? { duration: 0.7, ease: "easeOut" }
-            : { delay: 0.15 + index * 0.06, type: "spring", stiffness: 320, damping: 22 }
+          needsAttention
+            ? { duration: 0.5, repeat: Infinity, repeatDelay: 0.7, ease: "easeOut" }
+            : bouncing
+              ? { duration: 0.7, ease: "easeOut" }
+              : { delay: 0.15 + index * 0.06, type: "spring", stiffness: 320, damping: 22 }
         }
       >
         <MacAppIcon appId={appId} />

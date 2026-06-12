@@ -162,9 +162,9 @@ const COMMANDS = [
 function Prompt() {
   return (
     <span className="shrink-0 whitespace-pre">
-      <span className="text-emerald-400">aryan@aryanos</span>
+      <span className="text-emerald-600 dark:text-emerald-400">aryan@aryanos</span>
       <span className="text-neutral-500"> ~ </span>
-      <span className="text-sky-400">%</span>{" "}
+      <span className="text-sky-600 dark:text-sky-400">%</span>{" "}
     </span>
   )
 }
@@ -446,7 +446,7 @@ function TerminalApp() {
   return (
     <div
       ref={scrollRef}
-      className="h-full cursor-text overflow-y-auto bg-[#1a1b21]/95 p-3 font-mono text-[12.5px] leading-relaxed text-neutral-200"
+      className="h-full cursor-text overflow-y-auto bg-white/90 p-3 font-mono text-[12.5px] leading-relaxed text-neutral-700 dark:bg-[#1a1b21]/95 dark:text-neutral-200"
       onClick={() => inputRef.current?.focus()}
     >
       {lines.map((line) =>
@@ -456,7 +456,10 @@ function TerminalApp() {
             <span className="break-all whitespace-pre-wrap">{line.text}</span>
           </div>
         ) : (
-          <pre key={line.id} className="break-words whitespace-pre-wrap text-neutral-300">
+          <pre
+            key={line.id}
+            className="break-words whitespace-pre-wrap text-neutral-600 dark:text-neutral-300"
+          >
             {line.text}
           </pre>
         )
@@ -472,7 +475,7 @@ function TerminalApp() {
           spellCheck={false}
           autoComplete="off"
           autoCapitalize="off"
-          className="min-w-0 flex-1 bg-transparent text-neutral-100 caret-emerald-400 outline-none"
+          className="min-w-0 flex-1 bg-transparent text-neutral-900 caret-emerald-600 outline-none dark:text-neutral-100 dark:caret-emerald-400"
           aria-label="Terminal input"
         />
       </div>

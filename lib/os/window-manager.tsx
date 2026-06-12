@@ -36,6 +36,8 @@ type WindowManagerValue = {
   windows: Partial<Record<AppId, WindowEntry>>
   topApp: AppId | null
   anyEverOpened: boolean
+  attentionApps: AppId[]
+  requestAttention: (appId: AppId) => void
   openApp: (appId: AppId) => void
   closeApp: (appId: AppId) => void
   minimizeApp: (appId: AppId) => void
@@ -54,6 +56,7 @@ const WindowManagerContext = createContext<WindowManagerValue | null>(null)
 function WindowManagerProvider({ children }: { children: React.ReactNode }) {
   const [windows, setWindows] = useState<Partial<Record<AppId, WindowEntry>>>({})
   const [anyEverOpened, setAnyEverOpened] = useState(false)
+  const [attentionApps, setAttentionApps] = useState<AppId[]>([])
   const zCounter = useRef(10)
   const dockIcons = useRef(new Map<AppId, HTMLElement>())
   const boundsStore = useRef(new Map<AppId, Bounds>())
@@ -63,8 +66,13 @@ function WindowManagerProvider({ children }: { children: React.ReactNode }) {
     desktopActions.current = actions
   }, [])
 
+  const requestAttention = useCallback((appId: AppId) => {
+    setAttentionApps((prev) => (prev.includes(appId) ? prev : [...prev, appId]))
+  }, [])
+
   const openApp = useCallback((appId: AppId) => {
     setAnyEverOpened(true)
+    setAttentionApps((prev) => (prev.includes(appId) ? prev.filter((a) => a !== appId) : prev))
     setWindows((prev) => {
       const existing = prev[appId]
       const z = ++zCounter.current
@@ -135,6 +143,8 @@ function WindowManagerProvider({ children }: { children: React.ReactNode }) {
         windows,
         topApp,
         anyEverOpened,
+        attentionApps,
+        requestAttention,
         openApp,
         closeApp,
         minimizeApp,

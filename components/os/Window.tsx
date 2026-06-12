@@ -269,7 +269,7 @@ function OSWindow({ appId }: { appId: AppId }) {
       <motion.div
         className={cn(
           "flex h-full w-full flex-col overflow-hidden rounded-2xl border bg-white/80 backdrop-blur-2xl",
-          "border-black/[0.08]",
+          "border-black/[0.08] dark:border-white/[0.12] dark:bg-[#28282c]/90",
           isFocused
             ? "shadow-[0_28px_90px_-18px_rgba(0,0,0,0.32),0_4px_18px_rgba(0,0,0,0.08)]"
             : "shadow-[0_16px_50px_-16px_rgba(0,0,0,0.18)]"
@@ -298,7 +298,7 @@ function OSWindow({ appId }: { appId: AppId }) {
         {/* ─── Titlebar ─── */}
         <div
           className={cn(
-            "relative flex h-10 shrink-0 touch-none items-center border-b border-black/[0.06] px-3 select-none",
+            "relative flex h-10 shrink-0 touch-none items-center border-b border-black/[0.06] px-3 select-none dark:border-white/[0.08]",
             !maximized && "cursor-grab active:cursor-grabbing"
           )}
           onPointerDown={handleTitlebarPointerDown}
@@ -311,7 +311,7 @@ function OSWindow({ appId }: { appId: AppId }) {
               onClick={() => wm.closeApp(appId)}
               className={cn(
                 "flex size-3 items-center justify-center rounded-full transition-colors",
-                isFocused ? "bg-[#ff5f57]" : "bg-black/15"
+                isFocused ? "bg-[#ff5f57]" : "bg-black/15 dark:bg-white/20"
               )}
             >
               <span className="text-[8px] leading-none text-black/0 transition-colors group-hover:text-black/50">
@@ -323,7 +323,7 @@ function OSWindow({ appId }: { appId: AppId }) {
               onClick={() => wm.minimizeApp(appId)}
               className={cn(
                 "flex size-3 items-center justify-center rounded-full transition-colors",
-                isFocused ? "bg-[#febc2e]" : "bg-black/15"
+                isFocused ? "bg-[#febc2e]" : "bg-black/15 dark:bg-white/20"
               )}
             >
               <span className="text-[8px] leading-none text-black/0 transition-colors group-hover:text-black/50">
@@ -335,7 +335,7 @@ function OSWindow({ appId }: { appId: AppId }) {
               onClick={toggleMaximize}
               className={cn(
                 "flex size-3 items-center justify-center rounded-full transition-colors",
-                isFocused ? "bg-[#28c840]" : "bg-black/15"
+                isFocused ? "bg-[#28c840]" : "bg-black/15 dark:bg-white/20"
               )}
             >
               <span className="text-[8px] leading-none text-black/0 transition-colors group-hover:text-black/50">
@@ -346,7 +346,9 @@ function OSWindow({ appId }: { appId: AppId }) {
           <span
             className={cn(
               "pointer-events-none absolute left-1/2 -translate-x-1/2 font-mono text-xs tracking-wide",
-              isFocused ? "text-neutral-600" : "text-neutral-400"
+              isFocused
+                ? "text-neutral-600 dark:text-neutral-300"
+                : "text-neutral-400 dark:text-neutral-500"
             )}
           >
             {app.title.toLowerCase()}
@@ -354,7 +356,12 @@ function OSWindow({ appId }: { appId: AppId }) {
         </div>
 
         {/* ─── App content ─── */}
-        <div className="@container min-h-0 flex-1 overflow-y-auto overscroll-contain text-neutral-800">
+        <div
+          className={cn(
+            "@container min-h-0 flex-1 overflow-y-auto overscroll-contain text-neutral-800",
+            !app.alwaysDark && "app-surface"
+          )}
+        >
           <AppContent />
         </div>
 

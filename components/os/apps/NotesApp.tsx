@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import { motion, useAnimation } from "framer-motion"
 import { Lock, Pencil, Plus, Search, Trash2, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -36,6 +37,7 @@ function NotesApp() {
   const [draft, setDraft] = useState<Note[] | null>(null)
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle")
   const [saveError, setSaveError] = useState("")
+  const shake = useAnimation()
 
   useEffect(() => {
     setToken(localStorage.getItem(TOKEN_KEY))
@@ -85,6 +87,8 @@ function NotesApp() {
         setEditing(false)
         setSaveState("error")
         setSaveError("wrong token — locked again")
+        // The login-window headshake
+        shake.start({ x: [0, -12, 12, -8, 8, -4, 4, 0], transition: { duration: 0.45 } })
         return
       }
       if (!res.ok) {
@@ -129,7 +133,7 @@ function NotesApp() {
   const selected = visible?.find((n) => n.id === selectedId) ?? visible?.[0]
 
   return (
-    <div className="flex h-full flex-col">
+    <motion.div animate={shake} className="flex h-full flex-col">
       {/* Status strip */}
       <div className="flex items-center justify-between border-b border-black/[0.05] px-4 py-2 font-mono text-[10px] text-neutral-400">
         <span className="flex items-center gap-1.5">
@@ -309,7 +313,7 @@ function NotesApp() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }
 

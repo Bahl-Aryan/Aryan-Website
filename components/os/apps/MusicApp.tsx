@@ -122,7 +122,7 @@ function Equalizer({ playing }: { playing: boolean }) {
 
 function ExplicitBadge() {
   return (
-    <span className="inline-flex size-3.5 shrink-0 items-center justify-center rounded-[3px] bg-neutral-600 text-[8px] font-bold text-neutral-200">
+    <span className="inline-flex size-3.5 shrink-0 items-center justify-center rounded-[3px] bg-neutral-300 text-[8px] font-bold text-neutral-600 dark:bg-neutral-600 dark:text-neutral-200">
       E
     </span>
   )
@@ -168,12 +168,12 @@ function MusicApp() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-[#1e1e22] text-neutral-100">
+    <div className="flex h-full flex-col bg-white text-neutral-900 dark:bg-[#1e1e22] dark:text-neutral-100">
       {/* ─── Playback bar with the LCD ─── */}
-      <div className="flex items-center gap-2 border-b border-white/[0.07] bg-[#2a2a2e] px-3 py-1.5">
+      <div className="flex items-center gap-2 border-b border-black/[0.08] bg-[#f0f0f3] px-3 py-1.5 dark:border-white/[0.07] dark:bg-[#2a2a2e]">
         <div className="flex items-center gap-0.5">
           <button
-            className="rounded p-1.5 text-neutral-500 hover:text-neutral-300"
+            className="rounded p-1.5 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
             aria-label="Shuffle"
           >
             <Shuffle className="size-3.5" />
@@ -181,14 +181,14 @@ function MusicApp() {
           <button
             onClick={() => skip(-1)}
             aria-label="Previous"
-            className="rounded p-1.5 text-neutral-300 hover:text-white"
+            className="rounded p-1.5 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
           >
             <SkipBack className="size-4 fill-current" />
           </button>
           <button
             onClick={() => (current ? setPlaying((p) => !p) : playTrack(0))}
             aria-label={playing ? "Pause" : "Play"}
-            className="rounded p-1.5 text-neutral-100 hover:text-white"
+            className="rounded p-1.5 text-neutral-800 hover:text-black dark:text-neutral-100 dark:hover:text-white"
           >
             {playing ? (
               <Pause className="size-5 fill-current" />
@@ -199,12 +199,12 @@ function MusicApp() {
           <button
             onClick={() => skip(1)}
             aria-label="Next"
-            className="rounded p-1.5 text-neutral-300 hover:text-white"
+            className="rounded p-1.5 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
           >
             <SkipForward className="size-4 fill-current" />
           </button>
           <button
-            className="rounded p-1.5 text-neutral-500 hover:text-neutral-300"
+            className="rounded p-1.5 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
             aria-label="Repeat"
           >
             <Repeat className="size-3.5" />
@@ -212,17 +212,19 @@ function MusicApp() {
         </div>
 
         {/* LCD */}
-        <div className="relative mx-auto flex h-11 w-[min(380px,46%)] items-center overflow-hidden rounded-md border border-black/40 bg-[#18181b] shadow-[inset_0_1px_4px_rgba(0,0,0,0.5)]">
+        <div className="relative mx-auto flex h-11 w-[min(380px,46%)] items-center overflow-hidden rounded-md border border-black/[0.12] bg-[#e9e9ed] shadow-[inset_0_1px_4px_rgba(0,0,0,0.12)] dark:border-black/40 dark:bg-[#18181b] dark:shadow-[inset_0_1px_4px_rgba(0,0,0,0.5)]">
           {current ? (
             <>
               <Artwork hue={current.hue} className="h-full w-11 shrink-0" />
               <div className="min-w-0 flex-1 px-2 text-center">
-                <p className="truncate text-xs font-medium text-neutral-200">{current.title}</p>
+                <p className="truncate text-xs font-medium text-neutral-800 dark:text-neutral-200">
+                  {current.title}
+                </p>
                 <p className="truncate text-[10px] text-neutral-500">
                   {current.artist} — {current.album}
                 </p>
               </div>
-              <div className="absolute right-0 bottom-0 left-11 h-0.5 bg-white/10">
+              <div className="absolute right-0 bottom-0 left-11 h-0.5 bg-black/10 dark:bg-white/10">
                 {playing && (
                   <motion.div
                     key={`${trackIdx}-${playing}`}
@@ -236,7 +238,7 @@ function MusicApp() {
               </div>
             </>
           ) : (
-            <div className="flex w-full items-center justify-center gap-1.5 text-neutral-600">
+            <div className="flex w-full items-center justify-center gap-1.5 text-neutral-400 dark:text-neutral-600">
               <Music2 className="size-4" />
               <span className="text-[11px]">Music</span>
             </div>
@@ -246,7 +248,7 @@ function MusicApp() {
         {/* Volume (decorative — there is no audio, blissfully) */}
         <div className="hidden items-center gap-1.5 @lg:flex">
           <Volume1 className="size-4 text-neutral-500" />
-          <div className="relative h-1 w-16 rounded-full bg-white/15">
+          <div className="relative h-1 w-16 rounded-full bg-black/15 dark:bg-white/15">
             <div className="h-full w-2/3 rounded-full bg-neutral-400" />
             <div className="absolute top-1/2 left-2/3 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow" />
           </div>
@@ -255,7 +257,7 @@ function MusicApp() {
 
       <div className="flex min-h-0 flex-1">
         {/* ─── Sidebar ─── */}
-        <div className="hidden w-44 shrink-0 flex-col gap-3 overflow-y-auto border-r border-white/[0.07] bg-black/25 p-3 @lg:flex">
+        <div className="hidden w-44 shrink-0 flex-col gap-3 overflow-y-auto border-r border-black/[0.08] bg-black/[0.04] p-3 @lg:flex dark:border-white/[0.07] dark:bg-black/25">
           {SIDEBAR.map((group) => (
             <div key={group.section}>
               <p className="px-1.5 pb-1 font-mono text-[10px] tracking-wide text-neutral-500 uppercase">
@@ -267,8 +269,8 @@ function MusicApp() {
                   className={cn(
                     "flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left text-xs",
                     active
-                      ? "bg-white/[0.09] font-medium text-white"
-                      : "text-neutral-400 hover:bg-white/[0.05]"
+                      ? "bg-black/[0.07] font-medium text-neutral-900 dark:bg-white/[0.09] dark:text-white"
+                      : "text-neutral-500 hover:bg-black/[0.05] dark:text-neutral-400 dark:hover:bg-white/[0.05]"
                   )}
                 >
                   <Icon className={cn("size-3.5", active && "text-[#fa2d48]")} />
@@ -277,7 +279,7 @@ function MusicApp() {
               ))}
             </div>
           ))}
-          <p className="mt-auto px-1.5 font-mono text-[9px] leading-relaxed text-neutral-600">
+          <p className="mt-auto px-1.5 font-mono text-[9px] leading-relaxed text-neutral-400 dark:text-neutral-600">
             no actual audio —<br />
             no licensing budget
           </p>
@@ -291,8 +293,11 @@ function MusicApp() {
           </p>
 
           {/* Top Artists */}
-          <h3 className="mt-5 mb-2.5 text-sm font-semibold text-neutral-300">Top Artists</h3>
-          <div className="flex gap-4 overflow-x-auto pb-1">
+          <h3 className="mt-5 mb-2.5 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+            Top Artists
+          </h3>
+          {/* pt/-mt give the hover scale headroom inside the scroll clip */}
+          <div className="-mt-2 flex gap-4 overflow-x-auto pt-2 pb-1">
             {TOP_ARTISTS.map((artist, i) => (
               <motion.div
                 key={artist.name}
@@ -313,14 +318,18 @@ function MusicApp() {
                     .map((word) => word[0])
                     .join("")}
                 </div>
-                <span className="max-w-full truncate text-xs text-neutral-300">{artist.name}</span>
+                <span className="max-w-full truncate text-xs text-neutral-700 dark:text-neutral-300">
+                  {artist.name}
+                </span>
               </motion.div>
             ))}
           </div>
 
           {/* Top Songs */}
-          <h3 className="mt-5 mb-1 text-sm font-semibold text-neutral-300">Top Songs</h3>
-          <div className="grid grid-cols-[28px_1fr_auto] items-center gap-x-3 border-b border-white/[0.08] px-2 py-1.5 font-mono text-[10px] tracking-wide text-neutral-500 uppercase @xl:grid-cols-[28px_1.4fr_1fr_auto]">
+          <h3 className="mt-5 mb-1 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+            Top Songs
+          </h3>
+          <div className="grid grid-cols-[28px_1fr_auto] items-center gap-x-3 border-b border-black/[0.08] px-2 py-1.5 font-mono text-[10px] tracking-wide text-neutral-500 uppercase @xl:grid-cols-[28px_1.4fr_1fr_auto] dark:border-white/[0.08]">
             <span>#</span>
             <span>Title</span>
             <span className="hidden @xl:block">Album</span>
@@ -337,7 +346,9 @@ function MusicApp() {
                 onClick={() => playTrack(i)}
                 className={cn(
                   "group/row grid w-full grid-cols-[28px_1fr_auto] items-center gap-x-3 rounded-lg px-2 py-2 text-left transition-colors @xl:grid-cols-[28px_1.4fr_1fr_auto]",
-                  isCurrent ? "bg-white/[0.07]" : "hover:bg-white/[0.05]"
+                  isCurrent
+                    ? "bg-black/[0.05] dark:bg-white/[0.07]"
+                    : "hover:bg-black/[0.04] dark:hover:bg-white/[0.05]"
                 )}
               >
                 <span className="flex justify-center font-mono text-xs text-neutral-500">
@@ -346,7 +357,7 @@ function MusicApp() {
                   ) : (
                     <>
                       <span className="group-hover/row:hidden">{i + 1}</span>
-                      <Play className="hidden size-3 fill-current text-neutral-200 group-hover/row:block" />
+                      <Play className="hidden size-3 fill-current text-neutral-700 group-hover/row:block dark:text-neutral-200" />
                     </>
                   )}
                 </span>
@@ -356,7 +367,7 @@ function MusicApp() {
                     <span
                       className={cn(
                         "block truncate text-sm font-medium",
-                        isCurrent ? "text-[#fa2d48]" : "text-neutral-100"
+                        isCurrent ? "text-[#fa2d48]" : "text-neutral-900 dark:text-neutral-100"
                       )}
                     >
                       {track.title}

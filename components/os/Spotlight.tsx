@@ -56,14 +56,14 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
 
   return (
     <motion.div
-      className="w-[min(560px,90vw)] overflow-hidden rounded-2xl border border-white/30 bg-white/70 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+      className="w-[min(560px,90vw)] overflow-hidden rounded-2xl border border-black/[0.08] bg-[#f3f3f6]/95 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.5)] backdrop-blur-2xl dark:border-white/[0.12] dark:bg-[#26262a]/95"
       initial={{ scale: 0.92, y: -12 }}
       animate={{ scale: 1, y: 0 }}
       exit={{ scale: 0.95, opacity: 0 }}
       transition={{ type: "spring", stiffness: 380, damping: 28 }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex items-center gap-3 border-b border-black/[0.06] px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-black/[0.06] px-4 py-3 dark:border-white/[0.08]">
         <Search className="size-5 text-neutral-400" />
         <input
           autoFocus
@@ -74,7 +74,7 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
           }}
           onKeyDown={handleKeyDown}
           placeholder="Spotlight Search"
-          className="flex-1 bg-transparent text-lg text-neutral-800 placeholder-neutral-400 outline-none"
+          className="flex-1 bg-transparent text-lg text-neutral-800 placeholder-neutral-400 outline-none dark:text-neutral-100"
         />
       </div>
       <div ref={listRef} className="max-h-[320px] overflow-y-auto p-1.5">
@@ -91,7 +91,9 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
               onMouseEnter={() => setSelected(i)}
               className={cn(
                 "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left",
-                i === selectedIndex ? "bg-[#2563eb] text-white" : "text-neutral-800"
+                i === selectedIndex
+                  ? "bg-[#2563eb] text-white"
+                  : "text-neutral-800 dark:text-neutral-200"
               )}
             >
               <div className="size-8 shrink-0">
@@ -112,7 +114,7 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
           ))
         )}
       </div>
-      <div className="flex items-center justify-between border-t border-black/[0.06] px-4 py-2 font-mono text-[10px] text-neutral-400">
+      <div className="flex items-center justify-between border-t border-black/[0.06] px-4 py-2 font-mono text-[10px] text-neutral-400 dark:border-white/[0.08] dark:text-neutral-500">
         <span>↑↓ navigate · ↩ open · esc close</span>
         <span>⌥W close window · ⌥M minimize · ⌘` cycle</span>
       </div>
