@@ -13,7 +13,7 @@ const FILES: Record<string, string> = {
     "i love ml and infra. currently finishing my MCS at UIUC (dec '26).",
     "trying to get better at neovim.",
     "",
-    "if you're in sf let's grab a coffee.",
+    "say hi: bahlaryan@gmail.com",
   ].join("\n"),
   "stack.txt": ["stack i actually use:", "  python  aws  postgres  redis  docker  typescript"].join(
     "\n"
@@ -56,7 +56,7 @@ const NEOFETCH = String.raw`
                      Editor:  vscode → neovim (in progress)
                      Base:    san francisco bay area
                      Now:     building at endeavor
-                     Coffee:  yes
+                     Music:   capzlock, on loop
 `
 
 const HELP = [
@@ -96,7 +96,7 @@ const FORTUNES = [
   "a cache invalidation bug will humble you this quarter.",
   "the best infra is the kind nobody notices. keep it boring.",
   "you will exit vim on the first try today.",
-  "someone in sf wants to get coffee with you. (it's aryan.)",
+  "ship something small today. then ship something smaller.",
   "p99 looking good. ship it.",
   "the answer is redis. the question doesn't matter.",
 ]
@@ -152,7 +152,6 @@ const COMMANDS = [
   "rm",
   "exit",
   "hire",
-  "coffee",
   "github",
   "linkedin",
   "email",
@@ -367,9 +366,6 @@ function TerminalApp() {
         break
       case "mkdir":
         print("mkdir: this filesystem is read-only and also imaginary")
-        break
-      case "coffee":
-        print(FILES["coffee.txt"])
         break
       case "github":
         print("opening github.com/Bahl-Aryan…")

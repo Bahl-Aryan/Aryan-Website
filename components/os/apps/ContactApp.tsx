@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { ArrowUp, FileText, Github, Linkedin, Mail } from "lucide-react"
 import { useWindowManager } from "@/lib/os/window-manager"
+import { subscribeToMessages } from "@/lib/os/message-bus"
 import { cn } from "@/lib/utils"
 
 type Bubble = { id: number; from: "aryan" | "you"; text: string }
@@ -11,7 +12,6 @@ type Bubble = { id: number; from: "aryan" | "you"; text: string }
 const OPENERS: Bubble[] = [
   { id: 1, from: "aryan", text: "hey! 👋 thanks for stopping by" },
   { id: 2, from: "aryan", text: "ask me anything about aryan — his work, stack, projects" },
-  { id: 3, from: "aryan", text: "in sf? let's grab a coffee ☕" },
 ]
 
 const QUICK_LINKS = [
@@ -28,7 +28,7 @@ const SUGGESTIONS = [
   "what's he working on right now?",
   "what's his stack?",
   "tell me about a project",
-  "coffee?",
+  "how do i reach him?",
 ]
 
 const FALLBACK_REPLY =
@@ -73,6 +73,17 @@ function ContactApp() {
 
   const appendBubble = (from: Bubble["from"], text: string) =>
     setBubbles((prev) => [...prev, { id: nextId.current++, from, text }])
+
+  // Incoming texts from elsewhere in the OS (e.g. notification "Reply")
+  useEffect(() => {
+    return subscribeToMessages((text) =>
+      setBubbles((prev) =>
+        prev.some((b) => b.text === text)
+          ? prev
+          : [...prev, { id: nextId.current++, from: "aryan", text }]
+      )
+    )
+  }, [])
 
   const cannedReply = () => {
     if (fellBack) return

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Search } from "lucide-react"
 import { MacAppIcon } from "@/components/os/MacIcons"
@@ -14,6 +14,7 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
   const { openApp } = useWindowManager()
   const [query, setQuery] = useState("")
   const [selected, setSelected] = useState(0)
+  const listRef = useRef<HTMLDivElement>(null)
 
   const q = query.trim().toLowerCase()
   const results = SPOTLIGHT_APPS.filter((id) => {
@@ -26,6 +27,13 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
     )
   })
   const selectedIndex = Math.min(selected, Math.max(results.length - 1, 0))
+
+  // Keep the keyboard-selected row visible in the scrollable list
+  useEffect(() => {
+    listRef.current
+      ?.querySelector(`[data-spotlight-idx="${selectedIndex}"]`)
+      ?.scrollIntoView({ block: "nearest" })
+  }, [selectedIndex])
 
   const launch = (appId: AppId) => {
     openApp(appId)
@@ -69,7 +77,7 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
           className="flex-1 bg-transparent text-lg text-neutral-800 placeholder-neutral-400 outline-none"
         />
       </div>
-      <div className="max-h-[320px] overflow-y-auto p-1.5">
+      <div ref={listRef} className="max-h-[320px] overflow-y-auto p-1.5">
         {results.length === 0 ? (
           <p className="px-3 py-6 text-center font-mono text-xs text-neutral-400">
             no results — but the dock has everything
@@ -78,6 +86,7 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
           results.map((appId, i) => (
             <button
               key={appId}
+              data-spotlight-idx={i}
               onClick={() => launch(appId)}
               onMouseEnter={() => setSelected(i)}
               className={cn(

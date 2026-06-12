@@ -9,6 +9,7 @@ import { MacAppIcon } from "@/components/os/MacIcons"
 import { Spotlight } from "@/components/os/Spotlight"
 import { APP_ORDER, APPS } from "@/lib/os/apps"
 import { useWindowManager, type AppId } from "@/lib/os/window-manager"
+import { deliverMessage } from "@/lib/os/message-bus"
 import { useReducedMotionPref } from "@/lib/useReducedMotionPref"
 import { cn } from "@/lib/utils"
 
@@ -27,6 +28,10 @@ const WALLPAPERS = [
   {
     name: "Dusk",
     gradient: "linear-gradient(155deg,#10081f 0%,#3b1d5e 40%,#a83a6e 75%,#ffb36b 100%)",
+  },
+  {
+    name: "Midnight",
+    gradient: "linear-gradient(160deg,#0a0a14 0%,#1b1b3a 45%,#3b2a63 80%,#5b3b8a 100%)",
   },
 ]
 
@@ -313,6 +318,145 @@ function MenuBar({
 }
 
 // ─────────────────────────────────────────────────────────────
+// Desktop widgets — Sonoma style, top-left.
+// ─────────────────────────────────────────────────────────────
+function ClockWidget() {
+  const [now, setNow] = useState<Date | null>(null)
+  useEffect(() => {
+    const tick = () => setNow(new Date())
+    const first = setTimeout(tick, 0)
+    const id = setInterval(tick, 1000)
+    return () => {
+      clearTimeout(first)
+      clearInterval(id)
+    }
+  }, [])
+
+  const seconds = now ? now.getSeconds() : 0
+  const minutes = now ? now.getMinutes() : 0
+  const hours = now ? now.getHours() % 12 : 10
+  const secDeg = seconds * 6
+  const minDeg = minutes * 6 + seconds * 0.1
+  const hourDeg = hours * 30 + minutes * 0.5
+
+  return (
+    <div className="flex size-36 flex-col items-center justify-center rounded-[24px] border border-white/20 bg-black/30 shadow-[0_12px_36px_-12px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+      <svg viewBox="0 0 100 100" className="size-24">
+        <circle cx="50" cy="50" r="46" fill="rgba(255,255,255,0.95)" />
+        {Array.from({ length: 12 }, (_, i) => (
+          <line
+            key={i}
+            x1="50"
+            y1="8"
+            x2="50"
+            y2={i % 3 === 0 ? "15" : "12"}
+            stroke="#999"
+            strokeWidth={i % 3 === 0 ? 2.5 : 1.5}
+            transform={`rotate(${i * 30} 50 50)`}
+          />
+        ))}
+        <line
+          x1="50"
+          y1="50"
+          x2="50"
+          y2="27"
+          stroke="#1a1a1a"
+          strokeWidth="4"
+          strokeLinecap="round"
+          transform={`rotate(${hourDeg} 50 50)`}
+        />
+        <line
+          x1="50"
+          y1="50"
+          x2="50"
+          y2="16"
+          stroke="#1a1a1a"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          transform={`rotate(${minDeg} 50 50)`}
+        />
+        <line
+          x1="50"
+          y1="56"
+          x2="50"
+          y2="14"
+          stroke="#fa2d48"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          transform={`rotate(${secDeg} 50 50)`}
+        />
+        <circle cx="50" cy="50" r="2.5" fill="#fa2d48" />
+      </svg>
+      <span className="mt-0.5 text-[10px] font-medium text-white/80">san francisco</span>
+    </div>
+  )
+}
+
+const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"]
+
+function CalendarWidget() {
+  const { openApp } = useWindowManager()
+  const [today, setToday] = useState<Date | null>(null)
+  useEffect(() => {
+    const id = setTimeout(() => setToday(new Date()), 0)
+    return () => clearTimeout(id)
+  }, [])
+
+  if (!today)
+    return (
+      <div className="size-36 rounded-[24px] border border-white/20 bg-white/80 backdrop-blur-xl" />
+    )
+
+  const year = today.getFullYear()
+  const month = today.getMonth()
+  const firstDay = new Date(year, month, 1).getDay()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const cells: (number | null)[] = [
+    ...Array.from({ length: firstDay }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ]
+
+  return (
+    <button
+      onClick={() => openApp("timeline")}
+      className="size-36 rounded-[24px] border border-white/20 bg-white/85 p-3 text-left shadow-[0_12px_36px_-12px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-transform hover:scale-[1.03]"
+    >
+      <p className="text-[10px] font-bold tracking-wide text-[#fa2d48] uppercase">
+        {today.toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+      </p>
+      <div className="mt-1 grid grid-cols-7 gap-y-px text-center text-[7.5px] leading-[11px]">
+        {WEEKDAYS.map((d, i) => (
+          <span key={i} className="font-semibold text-neutral-400">
+            {d}
+          </span>
+        ))}
+        {cells.map((day, i) => (
+          <span
+            key={i}
+            className={cn(
+              "text-neutral-600",
+              day === today.getDate() &&
+                "mx-auto flex size-[11px] items-center justify-center rounded-full bg-[#fa2d48] font-bold text-white"
+            )}
+          >
+            {day ?? ""}
+          </span>
+        ))}
+      </div>
+    </button>
+  )
+}
+
+function DesktopWidgets() {
+  return (
+    <div className="absolute top-12 left-4 z-0 hidden flex-col gap-3 md:flex">
+      <ClockWidget />
+      <CalendarWidget />
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
 // Right-click context menu for the bare desktop.
 // ─────────────────────────────────────────────────────────────
 function ContextMenu({
@@ -427,7 +571,14 @@ function Notifications() {
               title: "Aryan Bahl",
               body: "in sf? let's grab a coffee ☕",
               actions: [
-                { label: "Reply", onClick: () => openApp("contact") },
+                {
+                  label: "Reply",
+                  onClick: () => {
+                    // Deliver the text into the Messages thread, then open it
+                    deliverMessage("in sf? let's grab a coffee ☕")
+                    openApp("contact")
+                  },
+                },
                 {
                   label: "Accept",
                   onClick: () => window.open("mailto:bahlaryan@gmail.com?subject=coffee%3F"),
@@ -643,9 +794,27 @@ function Desktop() {
   const wallpaperRef = React.useRef(0)
   const [asleep, setAsleep] = useState(false)
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null)
+  const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(
+    null
+  )
   const toggleSpotlight = useCallback(() => setSpotlightOpen((s) => !s), [])
   const wake = useCallback(() => setAsleep(false), [])
   useShortcuts(toggleSpotlight)
+
+  // Rubber-band selection on the bare desktop (cosmetic, but very mac)
+  const handleDesktopPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0 || e.target !== e.currentTarget) return
+    const x0 = e.clientX
+    const y0 = e.clientY
+    const onMove = (ev: PointerEvent) => setMarquee({ x0, y0, x1: ev.clientX, y1: ev.clientY })
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove)
+      window.removeEventListener("pointerup", onUp)
+      setMarquee(null)
+    }
+    window.addEventListener("pointermove", onMove)
+    window.addEventListener("pointerup", onUp)
+  }, [])
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     // Only the bare desktop gets the custom menu — windows, dock, and
@@ -674,6 +843,7 @@ function Desktop() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
       onContextMenu={handleContextMenu}
+      onPointerDown={handleDesktopPointerDown}
     >
       <Wallpaper index={wallpaper} />
       <div className="boot-noise" style={{ opacity: 0.05 }} />
@@ -682,7 +852,21 @@ function Desktop() {
         onSleep={() => setAsleep(true)}
         onNextWallpaper={nextWallpaper}
       />
+      <DesktopWidgets />
       <DesktopIcons />
+
+      {/* Rubber-band selection */}
+      {marquee && (
+        <div
+          className="pointer-events-none absolute z-[5] rounded-[3px] border border-blue-300/70 bg-blue-400/20"
+          style={{
+            left: Math.min(marquee.x0, marquee.x1),
+            top: Math.min(marquee.y0, marquee.y1),
+            width: Math.abs(marquee.x1 - marquee.x0),
+            height: Math.abs(marquee.y1 - marquee.y0),
+          }}
+        />
+      )}
 
       {/* First-run hint */}
       <AnimatePresence>

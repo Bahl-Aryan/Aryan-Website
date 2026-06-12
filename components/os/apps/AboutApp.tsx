@@ -1,11 +1,11 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Coffee } from "lucide-react"
+import { Send } from "lucide-react"
 import { useWindowManager } from "@/lib/os/window-manager"
 
 const SPECS: [string, string][] = [
-  ["Chip", "Caffeine M2 Pro"],
+  ["Chip", "M2 Pro (emotionally)"],
   ["Memory", "too many browser tabs"],
   ["Now", "building at Endeavor"],
   ["School", "MCS @ UIUC · Dec 2026"],
@@ -61,11 +61,11 @@ function AboutApp() {
 
       <div className="flex gap-2">
         <a
-          href="mailto:bahlaryan@gmail.com?subject=coffee%20in%20sf%3F"
+          href="mailto:bahlaryan@gmail.com?subject=hello%20from%20aryanOS"
           className="flex items-center gap-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 px-4 py-1.5 text-xs font-medium text-white transition-transform hover:scale-[1.03]"
         >
-          <Coffee className="size-3.5" />
-          in SF? let&apos;s grab a coffee
+          <Send className="size-3.5" />
+          say hi
         </a>
         <button
           onClick={() => openApp("resume")}

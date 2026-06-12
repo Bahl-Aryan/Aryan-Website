@@ -223,26 +223,34 @@ function MessagesIcon() {
   )
 }
 
-// ── Terminal: blinking cursor, types on hover ─────────────────
+// ── Terminal: prompt in the top-left, like the real one ───────
 function TerminalIcon() {
   return (
     <Squircle className="bg-gradient-to-b from-[#3a3a3f] to-[#141417]">
-      <div className="flex items-baseline gap-[6cqw] pb-[10cqw] font-mono text-[length:30cqw] font-bold">
-        <motion.span
-          className="text-white"
+      <svg viewBox="0 0 100 100" className="size-full">
+        <motion.path
+          d="M18 26 L34 38 L18 50"
+          fill="none"
+          stroke="white"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           variants={{
             rest: { x: 0 },
-            hover: { x: [0, 3, -2, 0], transition: { duration: 0.4 } },
+            hover: { x: [0, 4, -2, 0], transition: { duration: 0.4 } },
           }}
-        >
-          &gt;
-        </motion.span>
-        <motion.span
-          className="inline-block h-[6cqw] w-[26cqw] bg-white"
+        />
+        <motion.rect
+          x="42"
+          y="44"
+          width="22"
+          height="7"
+          rx="3.5"
+          fill="white"
           animate={{ opacity: [1, 1, 0, 0] }}
           transition={{ duration: 1.1, repeat: Infinity, times: [0, 0.5, 0.5, 1] }}
         />
-      </div>
+      </svg>
     </Squircle>
   )
 }
