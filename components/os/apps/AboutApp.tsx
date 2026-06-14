@@ -5,11 +5,11 @@ import { Send } from "lucide-react"
 import { useWindowManager } from "@/lib/os/window-manager"
 
 const SPECS: [string, string][] = [
-  ["Chip", "M2 Pro (emotionally)"],
-  ["Memory", "too many browser tabs"],
-  ["Now", "building at Endeavor"],
-  ["School", "MCS @ UIUC · Dec 2026"],
-  ["Base", "San Francisco Bay Area"],
+  ["Chip", "Apple M2 Pro"],
+  ["Memory", "16GB, mostly browser tabs"],
+  ["Now", "building at endeavor"],
+  ["School", "MCS @ UIUC, dec 2026"],
+  ["Base", "san francisco bay area"],
   ["Editor", "vscode → neovim (in progress)"],
   ["Serial number", "bahlaryan@gmail.com"],
 ]
@@ -35,8 +35,8 @@ function AboutApp() {
       </div>
 
       <p className="max-w-xs text-sm leading-relaxed text-neutral-600">
-        I love ML and infra — distributed pipelines, agentic runtimes, and the unglamorous plumbing
-        that makes products feel instant.
+        i love ml and infra. distributed pipelines, agentic runtimes, and the unglamorous plumbing
+        that makes products feel fast.
       </p>
 
       <div className="flex max-w-xs flex-wrap items-center justify-center gap-1.5">

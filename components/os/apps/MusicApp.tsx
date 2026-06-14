@@ -221,7 +221,7 @@ function MusicApp() {
                   {current.title}
                 </p>
                 <p className="truncate text-[10px] text-neutral-500">
-                  {current.artist} — {current.album}
+                  {current.artist} · {current.album}
                 </p>
               </div>
               <div className="absolute right-0 bottom-0 left-11 h-0.5 bg-black/10 dark:bg-white/10">
@@ -245,7 +245,7 @@ function MusicApp() {
           )}
         </div>
 
-        {/* Volume (decorative — there is no audio, blissfully) */}
+        {/* Volume (decorative - there is no audio, blissfully) */}
         <div className="hidden items-center gap-1.5 @lg:flex">
           <Volume1 className="size-4 text-neutral-500" />
           <div className="relative h-1 w-16 rounded-full bg-black/15 dark:bg-white/15">
@@ -280,17 +280,16 @@ function MusicApp() {
             </div>
           ))}
           <p className="mt-auto px-1.5 font-mono text-[9px] leading-relaxed text-neutral-400 dark:text-neutral-600">
-            no actual audio —<br />
-            no licensing budget
+            no audio playback,
+            <br />
+            just the list
           </p>
         </div>
 
         {/* ─── Main ─── */}
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           <h2 className="text-xl font-bold tracking-tight">Replay &apos;26</h2>
-          <p className="mt-0.5 text-xs text-neutral-500">
-            aryan&apos;s year in music · updated whenever
-          </p>
+          <p className="mt-0.5 text-xs text-neutral-500">aryan&apos;s year in music</p>
 
           {/* Top Artists */}
           <h3 className="mt-5 mb-2.5 text-sm font-semibold text-neutral-700 dark:text-neutral-300">

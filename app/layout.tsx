@@ -13,12 +13,12 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Aryan Bahl | Engineer & Systems Builder",
+  title: "Aryan Bahl",
   description:
-    "Engineered for growth. Built to scale. Portfolio of cloud infrastructure, systems engineering, and scalable applications.",
+    "aryan bahl's portfolio, built as a tiny macOS. engineer who loves ml and infra. building at endeavor.",
   openGraph: {
-    title: "Aryan Bahl | Engineer & Systems Builder",
-    description: "Engineered for growth. Built to scale.",
+    title: "Aryan Bahl",
+    description: "engineer who loves ml and infra. my portfolio, built as a tiny macOS.",
     type: "website",
   },
 }

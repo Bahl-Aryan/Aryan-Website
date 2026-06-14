@@ -94,7 +94,7 @@ function ResumeApp() {
         </ToolbarButton>
 
         <span className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 text-xs font-medium text-neutral-600 @lg:block">
-          Aryan_Bahl_Resume.pdf — Page 1 of 1
+          Aryan_Bahl_Resume.pdf · Page 1 of 1
         </span>
 
         <div className="ml-auto flex items-center gap-1">

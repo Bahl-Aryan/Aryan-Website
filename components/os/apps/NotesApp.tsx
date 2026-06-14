@@ -86,7 +86,7 @@ function NotesApp() {
         setToken(null)
         setEditing(false)
         setSaveState("error")
-        setSaveError("wrong token — locked again")
+        setSaveError("wrong token, locked again")
         // The login-window headshake
         shake.start({ x: [0, -12, 12, -8, 8, -4, 4, 0], transition: { duration: 0.45 } })
         return
@@ -144,9 +144,9 @@ function NotesApp() {
             )}
           />
           {editing
-            ? "editing — visitors still see the old version until you save"
+            ? "editing. visitors still see the old version until you save"
             : error
-              ? "offline — showing last loaded"
+              ? "offline, showing last loaded"
               : (SOURCE_LABEL[source] ?? SOURCE_LABEL.file)}
         </span>
         <span className="flex items-center gap-2">
@@ -194,7 +194,7 @@ function NotesApp() {
         </span>
       </div>
 
-      {/* Token unlock row (admin only — visitors will never have the token) */}
+      {/* Token unlock row (admin only - visitors will never have the token) */}
       {showUnlock && !token && (
         <div className="flex items-center gap-2 border-b border-black/[0.05] bg-amber-50/60 px-4 py-1.5">
           <input
@@ -209,7 +209,7 @@ function NotesApp() {
                 setTokenDraft("")
               }
             }}
-            placeholder="admin token (aryan only — nice try)"
+            placeholder="admin token (aryan only, nice try)"
             className="flex-1 bg-transparent font-mono text-[11px] text-neutral-700 placeholder-neutral-400 outline-none"
           />
         </div>
@@ -217,7 +217,7 @@ function NotesApp() {
 
       {notes === null ? (
         <div className="flex flex-1 items-center justify-center font-mono text-xs text-neutral-400">
-          {error ? "couldn't load notes — try again in a bit" : "loading notes…"}
+          {error ? "couldn't load notes, try again in a bit" : "loading notes…"}
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col @md:flex-row">
@@ -308,7 +308,7 @@ function NotesApp() {
                 </>
               )
             ) : (
-              <p className="font-mono text-xs text-neutral-400">no notes yet — check back soon</p>
+              <p className="font-mono text-xs text-neutral-400">no notes yet, check back soon</p>
             )}
           </div>
         </div>

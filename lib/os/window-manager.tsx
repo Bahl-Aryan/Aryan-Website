@@ -16,7 +16,7 @@ export type AppId =
   | "music"
 
 // Desktop-level actions (wallpaper, sleep) registered by the Desktop so
-// other surfaces — the Terminal, menus — can drive them.
+// other surfaces - the Terminal, menus - can drive them.
 export type DesktopActions = {
   nextWallpaper?: () => string
   sleep?: () => void
@@ -118,8 +118,19 @@ function WindowManagerProvider({ children }: { children: React.ReactNode }) {
     else dockIcons.current.delete(appId)
   }, [])
 
+  // Cache the last seen rect per icon. During a window's exit animation the
+  // dock can momentarily not have the icon registered (ref churn on re-render);
+  // returning the last known rect keeps the genie target stable so the exit
+  // animation can actually complete.
+  const lastDockRect = useRef(new Map<AppId, DOMRect>())
   const getDockIconRect = useCallback((appId: AppId) => {
-    return dockIcons.current.get(appId)?.getBoundingClientRect() ?? null
+    const el = dockIcons.current.get(appId)
+    if (el) {
+      const rect = el.getBoundingClientRect()
+      lastDockRect.current.set(appId, rect)
+      return rect
+    }
+    return lastDockRect.current.get(appId) ?? null
   }, [])
 
   const getBounds = useCallback((appId: AppId) => boundsStore.current.get(appId), [])

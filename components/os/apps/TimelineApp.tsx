@@ -22,88 +22,88 @@ type CalEvent = {
 const EVENTS: CalEvent[] = [
   {
     year: 2026,
-    period: "Mar 2026 — present",
+    period: "Mar 2026 - present",
     role: "Member of Technical Staff",
     org: "Endeavor",
     kind: "work",
     ongoing: true,
     detail:
-      "Building AI for the physical world (SF Bay Area). End-to-end production integrations for five enterprise clients, an agentic ingestion runtime, and event-driven pipeline re-architecture.",
+      "building ai for the physical world (sf bay area). production integrations for five enterprise clients, an agentic ingestion runtime, and an event-driven pipeline re-architecture.",
   },
   {
     year: 2025,
-    period: "Jun 2025 — Mar 2026",
+    period: "Jun 2025 - Mar 2026",
     role: "Head of Engineering",
     org: "Nora Music",
     kind: "work",
     detail:
-      "Led eng efforts to build an app for superfans — horizontally-scalable architecture with Redis and read replicas, 75% faster data ingestion, 400% longer average sessions.",
+      "led eng efforts to build an app for superfans. horizontally-scalable architecture with redis and read replicas, 75% faster data ingestion, 400% longer sessions.",
   },
   {
     year: 2025,
-    period: "Mar 2025 — Jan 2026",
+    period: "Mar 2025 - Jan 2026",
     role: "Machine Learning Engineer",
     org: "Boston Bioprocess",
     kind: "work",
     detail:
-      "Fine-tuned open-source LLMs on AWS SageMaker and built a full-stack recommendation system; automated experiment summarization with streamed LLM output.",
+      "fine-tuned open-source llms on aws sagemaker and built a full-stack recommendation system. automated experiment summarization with streamed llm output.",
   },
   {
     year: 2025,
-    period: "Mar 2025 — Feb 2026",
+    period: "Mar 2025 - Feb 2026",
     role: "Outreach Lead",
     org: "HackIllinois",
     kind: "clubs",
-    detail: "Raised $110k+ and doubled engagement for a 1,000+ person hackathon.",
+    detail: "raised 110k and doubled engagement for a 1,000+ person hackathon.",
   },
   {
     year: 2025,
-    period: "Jan 2025 — Sep 2025",
+    period: "Jan 2025 - Sep 2025",
     role: "Systems Lead",
     org: "Reflections | Projections",
     kind: "clubs",
-    detail: "Led 10 engineers to build and deploy infrastructure for 1,000+ attendees.",
+    detail: "led 10 engineers to build infra for 1,000+ attendees.",
   },
   {
     year: 2025,
     period: "May 2025",
-    role: "B.S. Computer Science",
+    role: "B.S. Computer Science/Chemistry",
     org: "UIUC",
     kind: "school",
-    detail: "B.S. in Computer Science with a minor in Statistics. MCS expected Dec 2026.",
+    detail: "b.s. in cs/chem with a minor in stats. mcs expected dec 2026.",
   },
   {
     year: 2024,
-    period: "Sep 2024 — Feb 2025",
+    period: "Sep 2024 - Feb 2025",
     role: "Software Engineer · API/Android",
     org: "HackIllinois",
     kind: "clubs",
-    detail: "Built APIs and revamped the Android app.",
+    detail: "built apis and revamped the android app.",
   },
   {
     year: 2024,
-    period: "Jun 2024 — Aug 2024",
+    period: "Jun 2024 - Aug 2024",
     role: "Data Science Intern",
     org: "Medpace",
     kind: "work",
     detail:
-      "Clinical research timeline forecasting with PyTorch; client-facing dashboards and analytics in R/Shiny (Cincinnati, OH).",
+      "clinical research timeline forecasting with pytorch. client facing dashboards and analytics in r/shiny (cincinnati, oh).",
   },
   {
     year: 2024,
-    period: "Jan 2024 — Dec 2024",
+    period: "Jan 2024 - Dec 2024",
     role: "Software Engineer",
     org: "Reflections | Projections",
     kind: "clubs",
-    detail: "Mobile app development for UIUC's longest-running tech conference.",
+    detail: "mobile app development.",
   },
   {
     year: 2023,
-    period: "Dec 2023 — Jan 2025",
+    period: "Dec 2023 - Jan 2025",
     role: "ML Research Assistant",
     org: "Illinois Institute of Technology",
     kind: "work",
-    detail: "Built and benchmarked VAEs for protein structure compression.",
+    detail: "built and benchmarked vaes for protein structure compression.",
   },
 ]
 
@@ -169,7 +169,7 @@ function TimelineApp() {
         <div className="mt-auto px-1 font-mono text-[10px] leading-relaxed text-neutral-400">
           {visible.length} events
           <br />
-          2023 — present
+          2023 - present
         </div>
       </div>
 
@@ -193,7 +193,7 @@ function TimelineApp() {
             ))}
           </div>
           <span className="ml-auto rounded-md bg-black/[0.05] px-2.5 py-1 font-mono text-[11px] text-neutral-500">
-            Today: now @ Endeavor
+            today: at endeavor
           </span>
         </div>
 
@@ -304,7 +304,7 @@ function TimelineApp() {
           </LayoutGroup>
           {visible.length === 0 && (
             <p className="py-10 text-center font-mono text-xs text-neutral-400">
-              all calendars hidden — check one on the left
+              all calendars hidden. check one on the left
             </p>
           )}
         </div>

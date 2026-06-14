@@ -43,11 +43,11 @@ function TrashApp() {
         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
           <FileX2 className="size-8 text-neutral-300" />
           <p className="text-sm font-medium text-neutral-600">Trash is empty</p>
-          <p className="font-mono text-[11px] text-neutral-400">i ship everything else</p>
+          <p className="font-mono text-[11px] text-neutral-400">nothing here</p>
         </div>
       ) : (
         <div className="flex-1 space-y-1 overflow-y-auto p-3">
-          {/* Files dragged here from the desktop — restorable */}
+          {/* Files dragged here from the desktop - restorable */}
           <AnimatePresence>
             {trashed.map((file) => (
               <motion.div

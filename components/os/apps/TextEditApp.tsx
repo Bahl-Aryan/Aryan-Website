@@ -16,7 +16,7 @@ function TextEditApp() {
       </div>
 
       <div className="flex-1 overflow-y-auto bg-white/70 px-8 py-6 font-serif text-[15px] leading-relaxed text-neutral-800">
-        <p className="mb-4 font-mono text-[11px] text-neutral-400">coffee.txt — edited today</p>
+        <p className="mb-4 font-mono text-[11px] text-neutral-400">coffee.txt, edited today</p>
         <p>hi.</p>
         <p className="mt-4">
           if you&apos;re in san francisco, let&apos;s grab a coffee. i like talking about ml, infra,
@@ -32,7 +32,7 @@ function TextEditApp() {
             bahlaryan@gmail.com
           </a>
         </p>
-        <p className="mt-8 font-mono text-[11px] text-neutral-400">— aryan</p>
+        <p className="mt-8 font-mono text-[11px] text-neutral-400">- aryan</p>
       </div>
     </div>
   )

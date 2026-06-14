@@ -1,6 +1,6 @@
 // Shared state for files dragged from the desktop into the Trash.
 // The Desktop removes the icon and TrashApp lists it; "Put Back"
-// restores it; "Empty Trash" deletes it for the session — just like
+// restores it; "Empty Trash" deletes it for the session - just like
 // the real thing.
 
 import type { AppId } from "@/lib/os/window-manager"

@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# aryanOS
 
-## Getting Started
+my portfolio, built as a tiny macOS. every dock icon opens a real window you can
+drag, resize, and stack. there's a Finder for projects, an Activity Monitor for
+what i'm working on, a Calendar for the timeline, a live Notes app, Messages (with
+a guardrailed bot), a Terminal, Apple Music, and a Preview for my resume. no
+scrolling, all windows.
 
-First, run the development server:
+built with next.js, typescript, tailwind, and framer-motion.
+
+## Run it locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Optional services
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+everything works with no env vars (the AI chat falls back to a canned auto-reply,
+and notes read from the bundled file). to turn the live features on, set these:
 
-## Learn More
+| var                        | what it does                                                                                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `OPENAI_API_KEY`           | turns the Messages bot into a real, guardrailed chat about me. without it, Messages uses a canned reply.                                               |
+| `OPENAI_MODEL`             | optional, defaults to `gpt-4o-mini`.                                                                                                                   |
+| `UPSTASH_REDIS_REST_URL`   | redis (REST) for live notes. `KV_REST_API_URL` also works.                                                                                             |
+| `UPSTASH_REDIS_REST_TOKEN` | token for the above. `KV_REST_API_TOKEN` also works.                                                                                                   |
+| `NOTES_ADMIN_TOKEN`        | a long random secret. unlocks the in-app notes editor (the hidden lock icon in the Notes app). i paste this once and can edit notes live for everyone. |
 
-To learn more about Next.js, take a look at the following resources:
+if redis isn't set, notes fall back to reading `content/notes.json` from GitHub,
+then to the bundled copy.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy on Railway
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. create a new project from this repo. Railway auto-detects next.js and runs
+   `npm run build` then `npm run start`.
+2. add the env vars above in the service settings.
+3. for live notes, add an Upstash Redis database (Upstash exposes the REST URL +
+   token that the notes API expects) and point the two `UPSTASH_REDIS_REST_*`
+   vars at it.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+that's it. the OS is one page, so there's nothing else to wire up.

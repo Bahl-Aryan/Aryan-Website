@@ -105,25 +105,41 @@ function OSWindow({ appId }: { appId: AppId }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── Exit: genie back into the dock icon (resolved at exit time) ──
+  // ── Exit: genie back into the dock icon (resolved once, then cached) ──
+  // AnimatePresence calls this via `custom` repeatedly during the exit. If the
+  // returned target changes between calls (it used to, when the dock rect
+  // flipped null→present mid-exit) framer restarts the animation forever and
+  // the window never unmounts. Each window exits exactly once, so caching the
+  // first resolution keeps the target stable and lets the exit complete.
+  const { getDockIconRect, getExitReason } = wm
+  const exitTargetRef = useRef<TargetAndTransition | null>(null)
   const getExitTarget = useCallback((): TargetAndTransition => {
-    const icon = wm.getDockIconRect(appId)
-    const reason = wm.getExitReason(appId)
-    if (prefersReducedMotion || !icon || reason === "close") {
-      return {
-        scale: 0.92,
-        opacity: 0,
-        transition: { duration: prefersReducedMotion ? 0.01 : 0.16, ease: "easeIn" },
-      }
-    }
-    return {
-      x: icon.left + icon.width / 2 - (x.get() + w.get() / 2),
-      y: icon.top + icon.height / 2 - (y.get() + h.get() / 2),
-      scale: 0.05,
-      opacity: 0,
-      transition: { type: "spring", stiffness: 360, damping: 32, opacity: { duration: 0.28 } },
-    }
-  }, [appId, wm, prefersReducedMotion, x, y, w, h])
+    if (exitTargetRef.current) return exitTargetRef.current
+    const icon = getDockIconRect(appId)
+    const reason = getExitReason(appId)
+    const target: TargetAndTransition =
+      prefersReducedMotion || !icon || reason === "close"
+        ? {
+            scale: 0.92,
+            opacity: 0,
+            transition: { duration: prefersReducedMotion ? 0.01 : 0.16, ease: "easeIn" },
+          }
+        : {
+            // Genie back into the dock icon
+            x: icon.left + icon.width / 2 - (x.get() + w.get() / 2),
+            y: icon.top + icon.height / 2 - (y.get() + h.get() / 2),
+            scale: 0.05,
+            opacity: 0,
+            transition: {
+              type: "spring",
+              stiffness: 360,
+              damping: 32,
+              opacity: { duration: 0.28 },
+            },
+          }
+    exitTargetRef.current = target
+    return target
+  }, [appId, getDockIconRect, getExitReason, prefersReducedMotion, x, y, w, h])
 
   // ── Dragging via the titlebar (with edge tiling) ─────────────
   const handleTitlebarPointerDown = useCallback(
@@ -248,7 +264,7 @@ function OSWindow({ appId }: { appId: AppId }) {
       onPointerDownCapture={() => wm.focusApp(appId)}
       data-no-desktop-menu
     >
-      {/* Snap preview (portaled out — this wrapper's transform would trap `fixed`) */}
+      {/* Snap preview (portaled out - this wrapper's transform would trap `fixed`) */}
       {previewBounds &&
         typeof document !== "undefined" &&
         createPortal(
@@ -268,11 +284,12 @@ function OSWindow({ appId }: { appId: AppId }) {
         )}
       <motion.div
         className={cn(
-          "flex h-full w-full flex-col overflow-hidden rounded-2xl border bg-white/80 backdrop-blur-2xl",
-          "border-black/[0.08] dark:border-white/[0.12] dark:bg-[#28282c]/90",
+          "flex h-full w-full flex-col overflow-hidden rounded-2xl border backdrop-blur-2xl transition-[box-shadow,background-color] duration-200",
+          // Focused windows sit forward (more opaque, deeper shadow); unfocused
+          // ones recede, so the active window clearly reads as on top.
           isFocused
-            ? "shadow-[0_28px_90px_-18px_rgba(0,0,0,0.32),0_4px_18px_rgba(0,0,0,0.08)]"
-            : "shadow-[0_16px_50px_-16px_rgba(0,0,0,0.18)]"
+            ? "border-black/[0.1] bg-white/85 shadow-[0_28px_90px_-18px_rgba(0,0,0,0.32),0_4px_18px_rgba(0,0,0,0.08)] dark:border-white/[0.14] dark:bg-[#28282c]/95"
+            : "border-black/[0.06] bg-white/65 shadow-[0_16px_50px_-16px_rgba(0,0,0,0.16)] dark:border-white/[0.08] dark:bg-[#28282c]/80"
         )}
         initial={
           prefersReducedMotion

@@ -30,12 +30,13 @@ import { useReducedMotionPref } from "@/lib/useReducedMotionPref"
 import { cn } from "@/lib/utils"
 
 // ─────────────────────────────────────────────────────────────
-// Wallpapers — vivid gradients with slow-drifting color fields.
+// Wallpapers - vivid gradients with slow-drifting color fields.
 // ─────────────────────────────────────────────────────────────
 const WALLPAPERS = [
   {
+    // Default: clean purple → pink
     name: "Bloom",
-    gradient: "linear-gradient(150deg,#3b1d8f 0%,#7a2bd1 35%,#c33aa0 70%,#e8602c 100%)",
+    gradient: "linear-gradient(150deg,#4a1d8f 0%,#7a2bd1 34%,#b83ba8 66%,#ec6aa6 100%)",
   },
   {
     name: "Reef",
@@ -51,24 +52,26 @@ const WALLPAPERS = [
   },
 ]
 
+// Soft, cohesive purple/pink color fields so the default wallpaper reads as one
+// palette rather than a rainbow.
 const BLOBS = [
   {
     size: "70vmax",
-    color: "rgba(255, 94, 247, 0.5)",
+    color: "rgba(255, 110, 200, 0.42)", // pink
     from: { top: "-25%", left: "-15%" },
     drift: { x: [0, 80, -40, 0], y: [0, 60, 100, 0] },
     duration: 34,
   },
   {
     size: "60vmax",
-    color: "rgba(2, 245, 255, 0.38)",
+    color: "rgba(150, 90, 255, 0.4)", // violet
     from: { bottom: "-30%", right: "-10%" },
     drift: { x: [0, -90, 30, 0], y: [0, -60, -20, 0] },
     duration: 40,
   },
   {
     size: "50vmax",
-    color: "rgba(255, 166, 0, 0.32)",
+    color: "rgba(255, 150, 190, 0.3)", // rose
     from: { top: "20%", right: "10%" },
     drift: { x: [0, 60, -80, 0], y: [0, 90, 40, 0] },
     duration: 46,
@@ -176,7 +179,7 @@ function MenuDropdown({
 }
 
 // ─────────────────────────────────────────────────────────────
-// Control Center — the real macOS layout, with a working
+// Control Center - the real macOS layout, with a working
 // dark-mode toggle and display-brightness slider.
 // ─────────────────────────────────────────────────────────────
 // macOS-style slider: white fill follows the knob, icon lives inside the track
@@ -289,7 +292,7 @@ function ControlCenter({
         {/* Connectivity */}
         <CCTile className="space-y-2.5">
           {[
-            { icon: Wifi, label: "Wi-Fi", detail: "probably-fine-5G", on: true },
+            { icon: Wifi, label: "Wi-Fi", detail: "Home Wi-Fi", on: true },
             { icon: Bluetooth, label: "Bluetooth", detail: "On", on: true },
             { icon: Radar, label: "AirDrop", detail: "it's a website", on: false },
           ].map(({ icon: Icon, label, detail, on }) => (
@@ -328,7 +331,7 @@ function ControlCenter({
             </span>
           </CCTile>
 
-          {/* Dark mode — the functional one */}
+          {/* Dark mode - the functional one */}
           <button onClick={(e) => onToggleTheme(e.clientX, e.clientY)} className="flex-1 text-left">
             <CCTile
               className={cn(
@@ -386,7 +389,7 @@ function ControlCenter({
               Not how it seems
             </span>
             <span className="block truncate text-[10px] leading-tight text-neutral-500 dark:text-neutral-400">
-              CapzLock — open Music
+              CapzLock · open Music
             </span>
           </span>
           <Play className="size-4 fill-current text-neutral-500 dark:text-neutral-300" />
@@ -438,7 +441,7 @@ function MenuBar({
       { divider: true },
       { label: "Sleep", action: onSleep },
       { label: "Restart…", action: () => window.location.reload() },
-      { label: "Shut Down… (please don't)", disabled: true },
+      { label: "Shut Down…", disabled: true },
     ],
     File: [
       { label: "New Finder Window", action: () => wm.openApp("projects"), shortcut: "⌘N" },
@@ -448,16 +451,16 @@ function MenuBar({
       { label: "Close All Windows", action: () => visibleApps.forEach((id) => wm.closeApp(id)) },
     ],
     Edit: [
-      { label: "Undo Career Choices", disabled: true, shortcut: "⌘Z" },
+      { label: "Undo", disabled: true, shortcut: "⌘Z" },
       { label: "Copy", disabled: true, shortcut: "⌘C" },
-      { label: "Paste (from stack overflow)", disabled: true, shortcut: "⌘V" },
+      { label: "Paste", disabled: true, shortcut: "⌘V" },
       { divider: true },
       { label: "Find Aryan", action: () => wm.openApp("contact"), shortcut: "⌘F" },
     ],
     View: [
       { label: "Change Wallpaper", action: onNextWallpaper },
       { divider: true },
-      { label: "Enter Full Screen (it already is)", disabled: true },
+      { label: "Enter Full Screen", disabled: true },
     ],
     Go: [
       { label: "Projects", action: () => wm.openApp("projects") },
@@ -488,18 +491,18 @@ function MenuBar({
         : [{ label: "No open windows", disabled: true }]) as MenuItem[]),
     ],
     Help: [
-      { label: "aryanOS Help (open Terminal, type `help`)", action: () => wm.openApp("terminal") },
-      { label: "Keyboard Shortcuts (⌘K · ⌥W · ⌥M · ⌘`)", disabled: true },
+      { label: "aryanOS Help", action: () => wm.openApp("terminal") },
+      { label: "Keyboard Shortcuts: ⌘K · ⌥W · ⌥M · ⌘`", disabled: true },
       { divider: true },
       { label: "Email Aryan", action: () => window.open("mailto:bahlaryan@gmail.com") },
     ],
     battery: [
       { label: "Battery: 100%", disabled: true },
-      { label: "Power Source: cold brew", disabled: true },
+      { label: "Power Source: Battery", disabled: true },
     ],
     wifi: [
       { label: "Wi-Fi: connected", disabled: true },
-      { label: "Network: probably-fine-5G", disabled: true },
+      { label: "Network: Home Wi-Fi", disabled: true },
     ],
   }
 
@@ -617,7 +620,7 @@ function MenuBar({
 }
 
 // ─────────────────────────────────────────────────────────────
-// Desktop widgets — Sonoma style, top-left.
+// Desktop widgets - Sonoma style, top-left.
 // ─────────────────────────────────────────────────────────────
 function ClockWidget() {
   const [now, setNow] = useState<Date | null>(null)
@@ -870,7 +873,7 @@ function Notifications() {
                 id: 1,
                 appId: "about",
                 title: "Welcome to aryanOS",
-                body: "poke around — nothing here can break. probably.",
+                body: "welcome to my portfolio. take a look around.",
               },
               8000
             )
@@ -970,7 +973,7 @@ function Notifications() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Desktop icons — click to open (this is a website, not a Mac™).
+// Desktop icons - click to open (this is a website, not a Mac™).
 // ─────────────────────────────────────────────────────────────
 const DESKTOP_FILES: { name: string; appId: AppId; kind: "pdf" | "txt" | "folder" }[] = [
   { name: "Resume.pdf", appId: "resume", kind: "pdf" },
@@ -1080,7 +1083,7 @@ function DesktopIconButton({
 }
 
 // ─────────────────────────────────────────────────────────────
-// Sleep overlay — click or any key to wake.
+// Sleep overlay - click or any key to wake.
 // ─────────────────────────────────────────────────────────────
 function SleepOverlay({ asleep, onWake }: { asleep: boolean; onWake: () => void }) {
   const [time, setTime] = useState("")
@@ -1227,7 +1230,7 @@ function Desktop() {
   }, [])
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
-    // Only the bare desktop gets the custom menu — windows, dock, and
+    // Only the bare desktop gets the custom menu - windows, dock, and
     // menu bar keep their normal behavior.
     if ((e.target as HTMLElement).closest("[data-no-desktop-menu]")) return
     e.preventDefault()
@@ -1317,7 +1320,7 @@ function Desktop() {
         <OSDock />
       </div>
 
-      {/* Display brightness (Control Center slider) — dims everything below the menu bar */}
+      {/* Display brightness (Control Center slider) - dims everything below the menu bar */}
       {brightness < 100 && (
         <div
           className="pointer-events-none absolute inset-0 z-[35] bg-black"
@@ -1334,12 +1337,12 @@ function Desktop() {
           position={ctxMenu}
           onClose={() => setCtxMenu(null)}
           items={[
-            { label: "New Folder (the desktop is full)", disabled: true },
+            { label: "New Folder", disabled: true },
             { label: "Get Info", action: () => wm.openApp("about") },
             { divider: true },
             { label: "Change Wallpaper", action: nextWallpaper },
-            { label: "Sort By: vibes ✓", disabled: true },
-            { label: "Clean Up (it's already clean)", disabled: true },
+            { label: "Sort By: Name", disabled: true },
+            { label: "Clean Up", disabled: true },
             { divider: true },
             { label: "Open Terminal Here", action: () => wm.openApp("terminal") },
           ]}

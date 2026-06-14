@@ -17,7 +17,7 @@ const PROCESSES: Process[] = [
   {
     name: "endeavor_integrations",
     detail:
-      "Building AI for the physical world at Endeavor — owning end-to-end production integrations for five enterprise clients (~$400k contract value): PO extraction, matching, ERP write-back.",
+      "building ai for the physical world at endeavor. own production integrations for five enterprise clients (~$400k contract value), doing po extraction, matching, and erp write-back.",
     cpu: 38.2,
     threads: 5,
     status: "running",
@@ -26,7 +26,7 @@ const PROCESSES: Process[] = [
   {
     name: "agentic_ingestion_runtime",
     detail:
-      "LangGraph StateGraph wrapping Claude via DeepAgents — Redis checkpointer for mid-run resume, LangSmith tracing per run. Multi-tenant ontology platform.",
+      "an agentic ingestion runtime for a multi-tenant ontology platform. langgraph stategraph wrapping claude via deepagents, redis checkpointer for mid-run resume, langsmith tracing per run.",
     cpu: 24.6,
     threads: 8,
     status: "running",
@@ -35,7 +35,7 @@ const PROCESSES: Process[] = [
   {
     name: "step_functions_migration",
     detail:
-      "Re-architected an always-on ECS worker into an event-driven Step Functions orchestrator — 90% cheaper, killed a 20% job-failure rate.",
+      "re-architected an always-on ecs worker into an event-driven step functions orchestrator. 90% cheaper, and killed a 20% job-failure rate.",
     cpu: 14.1,
     threads: 3,
     status: "running",
@@ -43,7 +43,7 @@ const PROCESSES: Process[] = [
   },
   {
     name: "mcs_uiuc",
-    detail: "Master's of Computer Science, University of Illinois Urbana-Champaign.",
+    detail: "finishing my master's in cs at uiuc.",
     cpu: 12.4,
     threads: 4,
     status: "running",
@@ -51,7 +51,7 @@ const PROCESSES: Process[] = [
   },
   {
     name: "learn_neovim",
-    detail: "Exiting vim is the easy part now. Muscle memory still loading.",
+    detail: "trying to get better at neovim. exiting vim is the easy part now.",
     cpu: 6.8,
     threads: 1,
     status: "running",
@@ -59,7 +59,7 @@ const PROCESSES: Process[] = [
   },
   {
     name: "this_website",
-    detail: "A portfolio that thinks it's an operating system. You're inside it right now.",
+    detail: "a portfolio that thinks it's an operating system. you're inside it right now.",
     cpu: 8.9,
     threads: 2,
     status: "running",
@@ -67,7 +67,7 @@ const PROCESSES: Process[] = [
   },
   {
     name: "sleep",
-    detail: "Deprioritized. Known issue, no fix planned.",
+    detail: "deprioritized, but i'm working on it.",
     cpu: 1.8,
     threads: 1,
     status: "idle",

@@ -2,14 +2,15 @@ import { promises as fs } from "fs"
 import path from "path"
 
 // Notes storage, in order of preference:
-//   1. Upstash Redis / Vercel KV (REST) — truly live: edits via the in-app
-//      editor (POST below) appear for every visitor within one poll (~10s).
-//   2. GitHub raw fallback — content/notes.json on main, no redeploy needed.
-//   3. The bundled file — dev mode and last resort.
+//   1. Redis over REST (Upstash) for truly live notes: edits from the in-app
+//      editor (POST below) show up for every visitor within one poll (~10s).
+//   2. GitHub raw fallback: content/notes.json on main, no redeploy needed.
+//   3. The bundled file: dev mode and last resort.
 //
-// Setup for (1): add the Upstash-for-Redis integration on Vercel (or any
-// Upstash db) and set NOTES_ADMIN_TOKEN to a long random secret. The token
-// unlocks the editor inside the Notes app itself.
+// Setup for (1) on Railway: add an Upstash Redis database (or Railway's Redis
+// plugin with an Upstash-style REST shim), set UPSTASH_REDIS_REST_URL and
+// UPSTASH_REDIS_REST_TOKEN, plus NOTES_ADMIN_TOKEN (a long random secret that
+// unlocks the editor inside the Notes app). KV_REST_API_* are also accepted.
 
 const KV_KEY = "aryanos:notes"
 const RAW_NOTES_URL =
@@ -67,7 +68,7 @@ export async function GET() {
     // fall through
   }
 
-  // 2. GitHub raw (production only — dev should show the local file)
+  // 2. GitHub raw (production only - dev should show the local file)
   if (process.env.NODE_ENV === "production") {
     try {
       const res = await fetch(RAW_NOTES_URL, { cache: "no-store" })
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
   const adminToken = process.env.NOTES_ADMIN_TOKEN
   if (!adminToken) {
     return Response.json(
-      { error: "editing not configured — set NOTES_ADMIN_TOKEN" },
+      { error: "editing not configured (set NOTES_ADMIN_TOKEN)" },
       { status: 501 }
     )
   }
@@ -103,7 +104,7 @@ export async function POST(request: Request) {
   }
   if (!kvConfig()) {
     return Response.json(
-      { error: "no KV store — add the Upstash/Vercel KV integration" },
+      { error: "no redis store configured (set UPSTASH_REDIS_REST_URL/TOKEN)" },
       { status: 501 }
     )
   }

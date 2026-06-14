@@ -11,7 +11,7 @@ type Bubble = { id: number; from: "aryan" | "you"; text: string }
 
 const OPENERS: Bubble[] = [
   { id: 1, from: "aryan", text: "hey! 👋 thanks for stopping by" },
-  { id: 2, from: "aryan", text: "ask me anything about aryan — his work, stack, projects" },
+  { id: 2, from: "aryan", text: "ask me anything about aryan. his work, stack, projects" },
 ]
 
 const QUICK_LINKS = [
@@ -32,7 +32,7 @@ const SUGGESTIONS = [
 ]
 
 const FALLBACK_REPLY =
-  "auto-reply: i'm not actually in this window 😅 — email bahlaryan@gmail.com and the real me will get back to you"
+  "auto-reply: i'm not actually in this window 😅 shoot me an email at bahlaryan@gmail.com and the real me will get back to you"
 
 function TypingBubble() {
   return (
@@ -129,7 +129,7 @@ function ContactApp() {
         setTyping(false)
         appendBubble(
           "aryan",
-          "whoa, slow down 😅 give it a minute — or just email bahlaryan@gmail.com"
+          "whoa, slow down 😅 give it a minute, or just email bahlaryan@gmail.com"
         )
         return
       }
@@ -143,7 +143,7 @@ function ContactApp() {
       }, 400)
     } catch {
       setTyping(false)
-      appendBubble("aryan", "hmm, message didn't go through — email bahlaryan@gmail.com instead 📬")
+      appendBubble("aryan", "hmm, that didn't go through. email bahlaryan@gmail.com instead 📬")
     }
   }
 
@@ -160,7 +160,7 @@ function ContactApp() {
         <p className="mt-1 text-xs font-semibold text-neutral-800">Aryan Bahl</p>
         <p className="flex items-center gap-1 font-mono text-[10px] text-neutral-400">
           <span className="size-1.5 rounded-full bg-emerald-400" />
-          {aiMode ? "aryan-bot · answers from his résumé only" : "usually online"}
+          {aiMode ? "aryan-bot · answers from his resume only" : "usually online"}
         </p>
       </div>
 

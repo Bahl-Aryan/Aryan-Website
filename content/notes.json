@@ -4,19 +4,19 @@
       "id": "welcome",
       "title": "hey, you found my notes",
       "date": "2026-06-11",
-      "body": "welcome to the notes app — this one's actually live.\n\nthis window reads a file straight out of my github repo, so when i edit it (sometimes from my phone), whatever i write shows up here without a redeploy. think of it as the sticky notes on my monitor, except you're allowed to read them.\n\npoke around the rest of the dock while you're here."
+      "body": "welcome to the notes app. this one's actually live.\n\ni can edit these notes right from this window (there's a hidden lock icon up top only i can unlock), and whatever i write shows up for everyone within a few seconds. no redeploy, no git. think of it as the sticky notes on my monitor, except you're allowed to read them.\n\npoke around the rest of the dock while you're here."
     },
     {
       "id": "now",
       "title": "what i'm up to",
       "date": "2026-06-11",
-      "body": "building enterprise integrations at endeavor and finishing my MCS at UIUC (dec '26).\n\ncurrent obsessions: agentic runtimes, event-driven pipelines, and making this website feel like an operating system."
+      "body": "building enterprise integrations at endeavor and finishing my mcs at uiuc (dec '26).\n\ncurrent obsessions: agentic runtimes, event-driven pipelines, and making this website feel like an operating system."
     },
     {
       "id": "site",
       "title": "about this site",
       "date": "2026-06-11",
-      "body": "no scrolling allowed. everything is a window — drag them, resize them, stack them.\n\nbuilt with next.js + framer-motion. the windows spring out of their dock icons because i think software should be a little gooey.\n\nps: there's a terminal in the dock now. type `help`. maybe try `sudo make coffee`."
+      "body": "no scrolling allowed. everything is a window. drag them, resize them, stack them.\n\nbuilt with next.js and framer-motion. the windows spring out of their dock icons because i think software should be a little gooey.\n\nps: there's a terminal in the dock now. type `help`. maybe try `sudo make coffee`."
     }
   ]
 }

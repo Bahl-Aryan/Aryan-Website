@@ -35,7 +35,14 @@ function Squircle({ className, children }: { className?: string; children: React
   )
 }
 
-// ── Finder (Projects): blinks and grins wider ─────────────────
+// ── Finder (Projects): a friendly double-blink ────────────────
+const blink: Variants = {
+  rest: { scaleY: 1 },
+  hover: {
+    scaleY: [1, 0.08, 1, 0.08, 1],
+    transition: { duration: 0.6, times: [0, 0.12, 0.24, 0.36, 0.48] },
+  },
+}
 function FinderIcon() {
   return (
     <Squircle className="bg-gradient-to-b from-[#9ddcff] to-[#3e9eff]">
@@ -45,16 +52,13 @@ function FinderIcon() {
           fill="#1e7fe8"
           opacity="0.85"
         />
-        {/* eyes blink */}
+        {/* eyes blink twice */}
         <motion.path
           d="M30 32 v14"
           stroke="#0b2e5e"
           strokeWidth="5"
           strokeLinecap="round"
-          variants={{
-            rest: { scaleY: 1 },
-            hover: { scaleY: [1, 0.05, 1], transition: { delay: 0.1, duration: 0.3 } },
-          }}
+          variants={blink}
           style={{ originY: "39px" }}
         />
         <motion.path
@@ -62,13 +66,10 @@ function FinderIcon() {
           stroke="#0b2e5e"
           strokeWidth="5"
           strokeLinecap="round"
-          variants={{
-            rest: { scaleY: 1 },
-            hover: { scaleY: [1, 0.05, 1], transition: { delay: 0.1, duration: 0.3 } },
-          }}
+          variants={blink}
           style={{ originY: "39px" }}
         />
-        {/* smile grows */}
+        {/* smile lifts a touch */}
         <motion.path
           stroke="#0b2e5e"
           strokeWidth="5"
@@ -77,8 +78,8 @@ function FinderIcon() {
           variants={{
             rest: { d: "M24 62 C36 74 66 74 78 62" },
             hover: {
-              d: "M22 60 C36 82 66 82 80 60",
-              transition: { type: "spring", stiffness: 300, damping: 15 },
+              d: "M24 61 C36 77 66 77 78 61",
+              transition: { type: "spring", stiffness: 300, damping: 16 },
             },
           }}
         />
@@ -135,12 +136,12 @@ function CalendarIcon() {
         </div>
         <motion.div
           className="flex flex-1 items-center justify-center text-[length:52cqw] leading-none font-light text-neutral-800"
+          style={{ transformPerspective: 360, transformOrigin: "top" }}
           variants={{
-            rest: { scale: 1, rotate: 0 },
+            rest: { rotateX: 0 },
             hover: {
-              scale: [1, 1.35, 0.9, 1.1, 1],
-              rotate: [0, -6, 5, -2, 0],
-              transition: { duration: 0.6 },
+              rotateX: [0, -88, -88, 0],
+              transition: { duration: 0.65, times: [0, 0.45, 0.55, 1], ease: "easeInOut" },
             },
           }}
         >
@@ -255,22 +256,38 @@ function TerminalIcon() {
   )
 }
 
-// ── Trash: the lid pops ───────────────────────────────────────
+// ── Trash: lid pops and a crumpled ball drops in ──────────────
 function TrashIcon() {
   return (
     <Squircle className="bg-gradient-to-b from-[#e3e3e9] to-[#b8b8c2]">
       <svg viewBox="0 0 100 100" className="size-[64%] overflow-visible">
-        {/* lid */}
-        <motion.g
+        {/* crumpled paper ball falls into the can */}
+        <motion.circle
+          cx="50"
+          r="7"
+          fill="#d2d2d9"
+          stroke="#a3a3ae"
+          strokeWidth="2"
           variants={{
-            rest: { rotate: 0, y: 0 },
+            rest: { cy: -28, opacity: 0, scale: 1 },
             hover: {
-              rotate: [0, -24, 10, 0],
-              y: [0, -7, 0],
-              transition: { duration: 0.55 },
+              cy: [-28, 50],
+              opacity: [0, 1, 1, 0],
+              scale: [1, 1, 0.5],
+              transition: { duration: 0.55, times: [0, 0.18, 0.82, 1], ease: "easeIn" },
             },
           }}
-          style={{ originX: "78px", originY: "24px" }}
+        />
+        {/* lid lifts to let it in */}
+        <motion.g
+          variants={{
+            rest: { rotate: 0 },
+            hover: {
+              rotate: [0, -28, 0],
+              transition: { duration: 0.55, times: [0, 0.3, 0.7] },
+            },
+          }}
+          style={{ originX: "80px", originY: "24px" }}
         >
           <rect x="20" y="20" width="60" height="8" rx="4" fill="#6e6e78" />
           <rect x="40" y="11" width="20" height="9" rx="3" fill="#6e6e78" />
@@ -326,15 +343,20 @@ function PreviewIcon() {
   )
 }
 
-// ── About (avatar): says hi ───────────────────────────────────
+// ── About (avatar): waves hi ──────────────────────────────────
 function AboutIcon() {
   return (
     <Squircle className="bg-gradient-to-br from-violet-500 to-fuchsia-500">
       <motion.span
-        className="text-[length:40cqw] font-semibold text-white"
+        className="inline-block text-[length:40cqw] font-semibold text-white"
+        style={{ originX: "50%", originY: "90%" }}
         variants={{
-          rest: { rotate: 0 },
-          hover: { rotate: [0, -12, 12, -6, 0], transition: { duration: 0.5 } },
+          rest: { rotate: 0, y: 0 },
+          hover: {
+            rotate: [0, -14, 12, -10, 8, 0],
+            y: [0, -3, 0, -2, 0],
+            transition: { duration: 0.7, ease: "easeInOut" },
+          },
         }}
       >
         ab
@@ -343,57 +365,97 @@ function AboutIcon() {
   )
 }
 
-// ── TextEdit: pen scribbles ───────────────────────────────────
+// ── TextEdit: the pen writes a fresh line ─────────────────────
 function TextEditIcon() {
   return (
     <Squircle className="bg-gradient-to-b from-white to-[#ececf2]">
-      <svg viewBox="0 0 100 100" className="size-[70%] overflow-visible">
-        <path
-          d="M16 24 h68 M16 40 h68 M16 56 h44"
-          stroke="#b9b9c4"
+      <svg viewBox="0 0 100 100" className="size-[72%] overflow-visible">
+        {/* two written lines */}
+        <path d="M16 26 h64 M16 42 h64" stroke="#c2c2cc" strokeWidth="5" strokeLinecap="round" />
+        {/* third line draws in as the pen sweeps across */}
+        <motion.path
+          d="M16 58 h56"
+          stroke="#c2c2cc"
           strokeWidth="5"
           strokeLinecap="round"
+          variants={{
+            rest: { pathLength: 1 },
+            hover: { pathLength: [0, 1], transition: { duration: 0.7, ease: "easeInOut" } },
+          }}
         />
+        {/* pen nib rides along the line it's drawing */}
         <motion.g
           variants={{
-            rest: { x: 0, rotate: 0 },
-            hover: { x: [0, 6, -4, 0], rotate: [0, -6, 4, 0], transition: { duration: 0.6 } },
+            rest: { x: 56, opacity: 0 },
+            hover: {
+              x: [0, 56],
+              opacity: [1, 1, 1, 0],
+              transition: {
+                duration: 0.7,
+                ease: "easeInOut",
+                opacity: { times: [0, 0.1, 0.85, 1] },
+              },
+            },
           }}
         >
-          <path d="M50 78 L78 50 L88 60 L60 88 L48 90 Z" fill="#8a8a96" />
-          <path d="M78 50 L88 60" stroke="#6e6e78" strokeWidth="3" />
+          <g transform="translate(8, 30) rotate(40)">
+            <path d="M0 0 L9 0 L9 22 L4.5 30 L0 22 Z" fill="#8a8a96" />
+            <path d="M0 0 L9 0 L9 6 L0 6 Z" fill="#6e6e78" />
+          </g>
         </motion.g>
       </svg>
     </Squircle>
   )
 }
 
-// ── Music: the note bounces to the beat ───────────────────────
+// ── Music: a little jingle (note hops, sound waves ring out) ──
 function MusicIcon() {
   return (
     <Squircle className="bg-gradient-to-b from-[#fc5c7d] to-[#fa2d48]">
-      <motion.svg
-        viewBox="0 0 100 100"
-        className="size-[60%]"
-        variants={{
-          rest: { y: 0, rotate: 0 },
-          hover: {
-            y: [0, -6, 0, -3, 0],
-            rotate: [0, -8, 6, -3, 0],
-            transition: { duration: 0.6 },
-          },
-        }}
-      >
-        <path
-          d="M38 78 V30 L78 20 V68"
-          fill="none"
-          stroke="white"
-          strokeWidth="7"
-          strokeLinejoin="round"
-        />
-        <ellipse cx="29" cy="78" rx="11" ry="9" fill="white" />
-        <ellipse cx="69" cy="68" rx="11" ry="9" fill="white" />
-      </motion.svg>
+      <svg viewBox="0 0 100 100" className="size-[64%] overflow-visible">
+        {/* sound waves ripple out on hover */}
+        {[0, 1].map((i) => (
+          <motion.path
+            key={i}
+            d="M70 40 Q82 56 70 72"
+            fill="none"
+            stroke="white"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+            style={{ originX: "64px", originY: "56px" }}
+            variants={{
+              rest: { opacity: 0, scale: 0.5 },
+              hover: {
+                opacity: [0, 0.9, 0],
+                scale: [0.5, 1.5],
+                transition: { delay: 0.15 + i * 0.22, duration: 0.7, repeat: Infinity },
+              },
+            }}
+          />
+        ))}
+        {/* the note hops a decaying jingle */}
+        <motion.g
+          variants={{
+            rest: { y: 0, rotate: 0 },
+            hover: {
+              y: [0, -8, 0, -5, 0, -2, 0],
+              rotate: [0, -7, 3, -4, 2, 0],
+              transition: { duration: 0.85, ease: "easeOut" },
+            },
+          }}
+          style={{ originX: "50px", originY: "78px" }}
+        >
+          <path
+            d="M40 76 V30 L74 22 V62"
+            fill="none"
+            stroke="white"
+            strokeWidth="7"
+            strokeLinejoin="round"
+          />
+          <ellipse cx="31" cy="76" rx="10" ry="8" fill="white" />
+          <ellipse cx="65" cy="62" rx="10" ry="8" fill="white" />
+        </motion.g>
+      </svg>
     </Squircle>
   )
 }

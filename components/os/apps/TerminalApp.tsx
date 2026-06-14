@@ -8,9 +8,9 @@ type Line = { id: number; type: "input" | "output"; text: string }
 
 const FILES: Record<string, string> = {
   "about.txt": [
-    "building at endeavor — ai for the physical world.",
+    "building at endeavor. ai for the physical world.",
     "",
-    "i love ml and infra. currently finishing my MCS at UIUC (dec '26).",
+    "i love ml and infra. finishing my mcs at uiuc (dec '26).",
     "trying to get better at neovim.",
     "",
     "say hi: bahlaryan@gmail.com",
@@ -18,7 +18,7 @@ const FILES: Record<string, string> = {
   "stack.txt": ["stack i actually use:", "  python  aws  postgres  redis  docker  typescript"].join(
     "\n"
   ),
-  "coffee.txt": "in sf? email bahlaryan@gmail.com — first round's on me ☕",
+  "coffee.txt": "in sf? email bahlaryan@gmail.com, first round's on me ☕",
   "todo.txt": [
     "[x] make website feel like an OS",
     "[ ] get better at neovim",
@@ -79,16 +79,16 @@ const HELP = [
 ].join("\n")
 
 const MAN_PAGES: Record<string, string> = {
-  help: "help — lists commands. you just ran man on it. meta.",
-  open: "open <app> — launches an app window. try `open notes` or `open coffee.txt`.",
-  ps: "ps — shows every running app and whether it's focused or minimized.",
-  kill: "kill <app> — closes an app's window. no processes were harmed.",
-  wallpaper: "wallpaper — cycles Bloom → Reef → Dusk. the gradients are hand-mixed.",
-  say: "say <text> — uses your browser's speech synthesis. volume up.",
-  cowsay: "cowsay <text> — it's a cow. it says things. essential infrastructure.",
-  sleep: "sleep — fades the OS to black. click anywhere to wake. no args, unlike real sleep.",
-  sudo: "sudo — you're not in the sudoers file. this incident will be reported (it won't).",
-  nvim: "nvim — aspirational.",
+  help: "help - lists commands. you just ran man on it. meta.",
+  open: "open <app> - launches an app window. try `open notes` or `open coffee.txt`.",
+  ps: "ps - shows every running app and whether it's focused or minimized.",
+  kill: "kill <app> - closes an app's window. no processes were harmed.",
+  wallpaper: "wallpaper - cycles bloom, reef, dusk, midnight. the gradients are hand-mixed.",
+  say: "say <text> - uses your browser's speech synthesis. volume up.",
+  cowsay: "cowsay <text> - it's a cow. it says things. essential infrastructure.",
+  sleep: "sleep - fades the os to black. click anywhere to wake. no args, unlike real sleep.",
+  sudo: "sudo - you're not in the sudoers file. this incident will be reported (it won't).",
+  nvim: "nvim - aspirational.",
 }
 
 const FORTUNES = [
@@ -234,7 +234,7 @@ function TerminalApp() {
         break
       case "cat":
         if (!arg) print("cat: which file? try `ls`")
-        else if (arg === "resume.pdf") print("cat: resume.pdf: binary file — try `open resume`")
+        else if (arg === "resume.pdf") print("cat: resume.pdf: binary file. try `open resume`")
         else print(FILES[arg] ?? `cat: ${arg}: No such file (try \`ls\`)`)
         break
       case "open": {
@@ -343,7 +343,7 @@ function TerminalApp() {
       case "nvim":
       case "vim":
       case "vi":
-        print("opening neovim…\n\njust kidding — still learning. (:wq to pretend you knew that)")
+        print("opening neovim…\n\njust kidding, still learning. (:wq to pretend you knew that)")
         break
       case "sudo":
         if (arg.includes("coffee")) print("☕ brewing… done. it's in sf, come pick it up.")

@@ -80,7 +80,7 @@ function OSDock() {
         <DockApp key={appId} appId={appId} index={i} />
       ))}
 
-      {/* Divider, then Trash — like the real thing */}
+      {/* Divider, then Trash - like the real thing */}
       <div className="mx-0.5 h-10 w-px self-center rounded-full bg-white/35" />
 
       <DockApp appId="trash" index={DOCK_APPS.length} />

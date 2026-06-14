@@ -80,7 +80,7 @@ function SpotlightPanel({ onClose }: { onClose: () => void }) {
       <div ref={listRef} className="max-h-[320px] overflow-y-auto p-1.5">
         {results.length === 0 ? (
           <p className="px-3 py-6 text-center font-mono text-xs text-neutral-400">
-            no results — but the dock has everything
+            no results, but the dock has everything
           </p>
         ) : (
           results.map((appId, i) => (

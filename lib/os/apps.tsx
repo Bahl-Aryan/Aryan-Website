@@ -20,7 +20,7 @@ export type AppDefinition = {
   component: ComponentType
   defaultSize: { w: number; h: number }
   minSize: { w: number; h: number }
-  alwaysDark?: boolean // app styles itself dark (Terminal, Music) — skip the dark-mode remap
+  alwaysDark?: boolean // app styles itself dark (Terminal, Music) - skip the dark-mode remap
 }
 
 export const APPS: Record<AppId, AppDefinition> = {
@@ -110,7 +110,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     id: "textedit",
     title: "TextEdit",
     dockLabel: "coffee.txt",
-    spotlight: "coffee.txt — sf, first round's on me",
+    spotlight: "coffee.txt · sf, first round's on me",
     component: TextEditApp,
     defaultSize: { w: 520, h: 480 },
     minSize: { w: 360, h: 300 },
@@ -119,7 +119,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     id: "music",
     title: "Music",
     dockLabel: "Music",
-    spotlight: "replay '26 — top tracks & artists",
+    spotlight: "replay '26 · top tracks and artists",
     component: MusicApp,
     defaultSize: { w: 760, h: 580 },
     minSize: { w: 420, h: 380 },
