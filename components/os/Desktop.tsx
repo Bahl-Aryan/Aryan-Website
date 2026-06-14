@@ -597,10 +597,12 @@ function MenuBar({
           </div>
           <button
             onClick={onSpotlight}
-            aria-label="Spotlight"
-            className="flex items-center rounded px-2 transition-colors hover:bg-white/15"
+            aria-label="Spotlight Search (⌘K)"
+            title="Search — ⌘K"
+            className="flex items-center gap-1 rounded px-2 transition-colors hover:bg-white/15"
           >
             <Search className="size-4 text-white/90" />
+            <span className="hidden font-mono text-[11px] text-white/70 sm:inline">⌘K</span>
           </button>
           <span className="flex items-center px-1.5 text-[13px] leading-none font-medium tabular-nums">
             {now

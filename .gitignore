@@ -23,7 +23,9 @@
 # misc
 .DS_Store
 *.pem
+# ignore résumé drafts in the repo root, but track the one the site serves
 *.pdf
+!public/Aryan_Bahl_Resume.pdf
 
 # debug
 npm-debug.log*
