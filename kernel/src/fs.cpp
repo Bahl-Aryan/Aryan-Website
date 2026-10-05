@@ -55,3 +55,28 @@ Status FileSystem::mkdir(const std::string &name) {
   it->second->parent = currDirectory_;
   return Status::Ok;
 }
+
+Status FileSystem::cd(const std::string &path) {
+  if (path.empty()) {
+    return Status::InvalidName;
+  }
+  if (path == "..") {
+    if (currDirectory_->parent) {
+      currDirectory_ = currDirectory_->parent;
+    }
+    return Status::Ok;
+  }
+  if (path == ".") {
+    return Status::Ok;
+  }
+  auto &children = currDirectory_->children;
+  auto it = children.find(path);
+  if (it == children.end()) {
+    return Status::NotFound;
+  }
+  if (!it->second->isDirectory) {
+    return Status::NotADirectory;
+  }
+  currDirectory_ = it->second.get();
+  return Status::Ok;
+}

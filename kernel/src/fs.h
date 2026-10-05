@@ -33,6 +33,7 @@ public:
   std::string pwd() const;
   std::vector<std::string> ls() const;
   Status mkdir(const std::string &name);
+  Status cd(const std::string &path);
 
 private:
   std::unique_ptr<Node> root_; // single root that owns the whole tree
