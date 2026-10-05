@@ -2,6 +2,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 struct Node {
   bool isDirectory;
@@ -30,6 +31,8 @@ public:
   FileSystem();
 
   std::string pwd() const;
+  std::vector<std::string> ls() const;
+  Status mkdir(const std::string &name);
 
 private:
   std::unique_ptr<Node> root_; // single root that owns the whole tree
