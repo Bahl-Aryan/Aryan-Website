@@ -25,6 +25,58 @@ bool FileSystem::isValidName(const std::string &name) {
   return true;
 }
 
+Node *FileSystem::resolve(const std::string &path) const {
+  Node *currNode = nullptr;
+  if (!path.empty() && path[0] == '/') {
+    currNode = root_.get();
+  } else {
+    currNode = currDirectory_;
+  }
+
+  auto pieces = splitPath(path);
+  for (const auto &piece : pieces) {
+    if (!currNode->isDirectory) {
+      return nullptr;
+    }
+    if (piece == "..") {
+      if (currNode->parent) {
+        currNode = currNode->parent;
+      }
+      continue;
+    }
+    if (piece == ".") {
+      continue;
+    }
+    auto &children = currNode->children;
+    auto it = children.find(piece);
+    if (it == children.end()) {
+      return nullptr;
+    }
+    currNode = it->second.get();
+  }
+  return currNode;
+}
+
+std::vector<std::string> FileSystem::splitPath(const std::string &path) {
+  // take a string like 'a/b/c' and split it into the different pieces
+  std::vector<std::string> res;
+  std::string piece;
+  for (char c : path) {
+    if (c == '/') {
+      if (!piece.empty()) {
+        res.push_back(std::move(piece));
+      }
+      piece.clear();
+    } else {
+      piece += c;
+    }
+  }
+  if (!piece.empty()) {
+    res.push_back(std::move(piece));
+  }
+  return res;
+}
+
 // Public Methods
 std::string FileSystem::pwd() const { return getPath(currDirectory_); }
 
@@ -60,23 +112,13 @@ Status FileSystem::cd(const std::string &path) {
   if (path.empty()) {
     return Status::InvalidName;
   }
-  if (path == "..") {
-    if (currDirectory_->parent) {
-      currDirectory_ = currDirectory_->parent;
-    }
-    return Status::Ok;
-  }
-  if (path == ".") {
-    return Status::Ok;
-  }
-  auto &children = currDirectory_->children;
-  auto it = children.find(path);
-  if (it == children.end()) {
+  Node *node = resolve(path);
+  if (!node) {
     return Status::NotFound;
   }
-  if (!it->second->isDirectory) {
+  if (!node->isDirectory) {
     return Status::NotADirectory;
   }
-  currDirectory_ = it->second.get();
+  currDirectory_ = node;
   return Status::Ok;
 }

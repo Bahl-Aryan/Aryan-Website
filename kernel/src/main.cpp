@@ -68,6 +68,34 @@ int main() {
   fs.cd("..");
   // cd into a file -> NotADirectory: needs touch, checked in slice 5
 
+  // slice 4: cd with real paths (tree is now /a, /a/c, /b)
+  // cdFrom: stand in `from`, run cd(path), expect that status and that pwd
+  auto cdFrom = [&fs](const std::string &from, const std::string &path,
+                      Status expected, const std::string &expectedPwd) {
+    fs.cd(from);
+    bool ok = fs.cd(path) == expected && fs.pwd() == expectedPwd;
+    check(ok, "from " + from + ": cd \"" + path + "\" -> " + expectedPwd);
+  };
+  cdFrom("/", "a/c", Status::Ok, "/a/c");
+  cdFrom("/", "/a/c", Status::Ok, "/a/c");
+  cdFrom("/a/c", "..", Status::Ok, "/a");
+  cdFrom("/a/c", "/b", Status::Ok, "/b");
+  cdFrom("/a", "../b", Status::Ok, "/b");
+  cdFrom("/a/c", "../../..", Status::Ok, "/");
+  cdFrom("/", "/..", Status::Ok, "/");
+  cdFrom("/", "/../a", Status::Ok, "/a");
+  cdFrom("/b", "/a/../a/c", Status::Ok, "/a/c");
+  cdFrom("/a", "c/..", Status::Ok, "/a");
+  cdFrom("/", "./a/./c/..", Status::Ok, "/a");
+  cdFrom("/", "//a//c//", Status::Ok, "/a/c");
+  cdFrom("/a/c", "/", Status::Ok, "/");
+  cdFrom("/a", "nope", Status::NotFound, "/a");
+  cdFrom("/a", "c/nope", Status::NotFound, "/a");
+  cdFrom("/a", "a/c", Status::NotFound, "/a"); // relative: means /a/a/c
+  cdFrom("/a", "/nope/c", Status::NotFound, "/a");
+  cdFrom("/a", "", Status::InvalidName, "/a");
+  fs.cd("/");
+
   std::cout << "\nls:\n";
   for (const auto &entry : fs.ls()) {
     std::cout << "  " << entry << '\n';

@@ -48,4 +48,5 @@ private:
 
   static std::string getPath(const Node *node);
   static bool isValidName(const std::string &name);
+  static std::vector<std::string> splitPath(const std::string &path);
 };
