@@ -100,7 +100,7 @@ int main() {
   cdFrom("/a", "c/nope", Status::NotFound, "/a");
   cdFrom("/a", "a/c", Status::NotFound, "/a"); // relative: means /a/a/c
   cdFrom("/a", "/nope/c", Status::NotFound, "/a");
-  cdFrom("/a", "", Status::InvalidName, "/a");
+  cdFrom("/a", "", Status::InvalidArguments, "/a");
   fs.cd("/");
 
   // slice 4: mkdir with paths
@@ -145,7 +145,8 @@ int main() {
         "plain ls lists the current folder");
   fs.cd("/");
   check(listAt("nope", Status::NotFound, {}), "ls nope -> NotFound");
-  check(listAt("", Status::NotFound, {}), "ls \"\" -> NotFound");
+  check(listAt("", Status::InvalidArguments, {}),
+        "ls \"\" -> InvalidArguments");
   {
     std::vector<std::string> out = {"old"};
     fs.ls("nope", out);
@@ -155,7 +156,84 @@ int main() {
     check(out == std::vector<std::string>{"x/"},
           "ls replaces out instead of appending");
   }
-  // ls on a file -> just its name: needs touch, checked in slice 5
+
+  // slice 5: touch, cat, write (tree: /a/{c/deep, y, z}, /b/x, cwd /)
+  // catIs: cat(path) must return `expected` status and exactly `content`
+  auto catIs = [&fs](const std::string &path, Status expected,
+                     const std::string &content) {
+    std::string out;
+    return fs.cat(path, out) == expected && out == content;
+  };
+
+  // touch
+  check(fs.touch("notes.txt") == Status::Ok, "touch notes.txt");
+  check(listAt("/", Status::Ok, {"a/", "b/", "notes.txt"}),
+        "ls / shows notes.txt with no trailing /");
+  check(catIs("notes.txt", Status::Ok, ""), "a touched file is empty");
+  check(fs.touch("notes.txt") == Status::Ok,
+        "touch an existing file -> Ok (like Unix)");
+  check(fs.touch("/a/c/f.txt") == Status::Ok, "touch /a/c/f.txt (absolute)");
+  check(listAt("a/c", Status::Ok, {"deep/", "f.txt"}),
+        "ls a/c shows the folder and the file, sorted");
+  check(fs.touch("a") == Status::Ok, "touch an existing folder -> Ok");
+  check(listAt("/", Status::Ok, {"a/", "b/", "notes.txt"}),
+        "touch on a folder didn't turn it into a file");
+  check(fs.touch("nope/x") == Status::NotFound, "touch nope/x -> NotFound");
+  check(fs.touch("") != Status::Ok, "touch \"\" fails");
+  check(fs.mkdir("notes.txt") == Status::AlreadyExists,
+        "mkdir over an existing file -> AlreadyExists");
+
+  // cat
+  check(catIs("a", Status::NotAFile, ""), "cat a folder -> NotAFile");
+  check(catIs("nope", Status::NotFound, ""), "cat nope -> NotFound");
+  check(catIs("", Status::InvalidArguments, ""), "cat \"\" -> InvalidArguments");
+
+  // write: create, replace, append
+  check(fs.write("new.txt", "hello", false) == Status::Ok,
+        "write to a new file creates it");
+  check(catIs("new.txt", Status::Ok, "hello"), "cat new.txt -> hello");
+  check(catIs("new.txt", Status::Ok, "hello"),
+        "cat twice gives the same content (cat doesn't empty the file)");
+  check(fs.write("new.txt", " world", true) == Status::Ok, "append ' world'");
+  check(catIs("new.txt", Status::Ok, "hello world"), "append adds to the end");
+  check(fs.write("new.txt", "bye", false) == Status::Ok, "write (replace) bye");
+  check(catIs("new.txt", Status::Ok, "bye"), "replace overwrites the content");
+  check(fs.write("/b/log.txt", "x", true) == Status::Ok,
+        "append to a missing file creates it");
+  check(catIs("/b/log.txt", Status::Ok, "x"), "cat /b/log.txt -> x");
+  fs.cd("/a/c");
+  check(fs.write("../../b/log.txt", " y", true) == Status::Ok,
+        "from /a/c: append via ../../b/log.txt");
+  check(catIs("/b/log.txt", Status::Ok, "x y"), "relative append landed in /b");
+  fs.cd("/");
+
+  // write failures
+  check(fs.write("a", "hi", false) == Status::NotAFile,
+        "write to a folder -> NotAFile");
+  check(listAt("a", Status::Ok, {"c/", "y/", "z/"}),
+        "failed write didn't change the folder");
+  check(fs.write("nope/f", "x", false) == Status::NotFound,
+        "write nope/f -> NotFound");
+  check(fs.write("notes.txt/f", "x", false) == Status::NotADirectory,
+        "write notes.txt/f -> NotADirectory (parent is a file)");
+  check(fs.write("", "x", false) == Status::InvalidArguments,
+        "write \"\" -> InvalidArguments");
+  check(listAt("/", Status::Ok, {"a/", "b/", "new.txt", "notes.txt"}),
+        "failed writes didn't create anything at root");
+
+  // files inside other commands (waiting since slice 3)
+  check(fs.cd("notes.txt") == Status::NotADirectory && fs.pwd() == "/",
+        "cd into a file -> NotADirectory, doesn't move you");
+  check(fs.cd("notes.txt/x") != Status::Ok && fs.pwd() == "/",
+        "cd through a file fails, doesn't move you");
+  check(listAt("notes.txt", Status::Ok, {"notes.txt"}),
+        "ls on a file -> just its name");
+  check(listAt("notes.txt/..", Status::NotFound, {}),
+        "ls notes.txt/.. -> NotFound (can't go through a file)");
+  check(fs.mkdir("notes.txt/x") == Status::NotADirectory,
+        "mkdir notes.txt/x -> NotADirectory");
+  check(fs.touch("/a/c/f.txt/x") == Status::NotADirectory,
+        "touch /a/c/f.txt/x -> NotADirectory");
 
   std::cout << "\nls:\n";
   for (const auto &entry : list()) {

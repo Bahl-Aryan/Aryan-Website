@@ -24,6 +24,7 @@ enum class Status {
   AlreadyExists,     // create a dir or file that already exists
   DirectoryNotEmpty, // rm on a non-empty dir without -r
   InvalidName,       // empty or name containing `/`
+  InvalidArguments,  // invalid arguments passed
 };
 
 class FileSystem {
@@ -31,10 +32,15 @@ public:
   FileSystem();
 
   std::string pwd() const;
+  Status cat(const std::string &path, std::string &out) const;
   Status ls(std::vector<std::string> &out) const;
   Status ls(const std::string &path, std::vector<std::string> &out) const;
   Status mkdir(const std::string &path);
   Status cd(const std::string &path);
+  Status touch(const std::string &path);
+
+  // write into file operator, > and >>
+  Status write(const std::string &path, std::string content, bool isAppend);
 
 private:
   std::unique_ptr<Node> root_; // single root that owns the whole tree
@@ -46,7 +52,7 @@ private:
   // used for paths that don't exist yet
   Status resolveParent(const std::string &path, Node *&parent,
                        std::string &name) const;
-
+  Status createNode(const std::string &path, bool isDirectory, Node *&created);
   Node *getStartNodeFor(const std::string &path) const;
   Node *walkPath(Node *currNode, const std::vector<std::string> &pieces) const;
   static std::string getPath(const Node *node);

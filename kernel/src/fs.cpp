@@ -55,6 +55,28 @@ Status FileSystem::resolveParent(const std::string &path, Node *&parent,
   return Status::Ok;
 }
 
+Status FileSystem::createNode(const std::string &path, bool isDirectory,
+                              Node *&created) {
+  Node *parent = nullptr;
+  std::string name;
+  // use resolveParent to set parent and name
+  Status status = resolveParent(path, parent, name);
+  if (status != Status::Ok) {
+    return status;
+  }
+  auto &children = parent->children;
+  auto node = std::make_unique<Node>(isDirectory, name);
+  // try_emplace returns false if key exists in children alr
+  // can use that to return AlreadyExists instead of .count on map
+  auto [it, success] = children.try_emplace(name, std::move(node));
+  if (!success) {
+    return Status::AlreadyExists;
+  }
+  it->second->parent = parent;
+  created = it->second.get();
+  return Status::Ok;
+}
+
 std::vector<std::string> FileSystem::splitPath(const std::string &path) {
   // take a string like 'a/b/c' and split it into the different pieces
   std::vector<std::string> res;
@@ -107,6 +129,22 @@ Node *FileSystem::getStartNodeFor(const std::string &path) const {
 // Public Methods
 std::string FileSystem::pwd() const { return getPath(currDirectory_); }
 
+Status FileSystem::cat(const std::string &path, std::string &out) const {
+  if (path.empty()) {
+    return Status::InvalidArguments;
+  }
+  Node *node = resolve(path);
+  if (!node) {
+    return Status::NotFound;
+  }
+  if (node->isDirectory) {
+    return Status::NotAFile;
+  }
+  // no std::move here, just a copy of the content
+  out = node->content;
+  return Status::Ok;
+}
+
 Status FileSystem::ls(std::vector<std::string> &out) const {
   return ls(".", out);
 }
@@ -114,7 +152,7 @@ Status FileSystem::ls(std::vector<std::string> &out) const {
 Status FileSystem::ls(const std::string &path,
                       std::vector<std::string> &out) const {
   if (path.empty()) {
-    return Status::NotFound;
+    return Status::InvalidArguments;
   }
   Node *node = resolve(path);
   if (!node) {
@@ -137,28 +175,13 @@ Status FileSystem::ls(const std::string &path,
 }
 
 Status FileSystem::mkdir(const std::string &path) {
-  Node *parent = nullptr;
-  std::string name;
-  // use resolveParent to set parent and name
-  Status status = resolveParent(path, parent, name);
-  if (status != Status::Ok) {
-    return status;
-  }
-  auto &children = parent->children;
-  auto node = std::make_unique<Node>(true, name);
-  // try_emplace returns false if key exists in children alr
-  // can use that to return AlreadyExists instead of .count on map
-  auto [it, success] = children.try_emplace(name, std::move(node));
-  if (!success) {
-    return Status::AlreadyExists;
-  }
-  it->second->parent = parent;
-  return Status::Ok;
+  Node *node = nullptr;
+  return createNode(path, true, node);
 }
 
 Status FileSystem::cd(const std::string &path) {
   if (path.empty()) {
-    return Status::InvalidName;
+    return Status::InvalidArguments;
   }
   Node *node = resolve(path);
   if (!node) {
@@ -168,5 +191,37 @@ Status FileSystem::cd(const std::string &path) {
     return Status::NotADirectory;
   }
   currDirectory_ = node;
+  return Status::Ok;
+}
+
+Status FileSystem::touch(const std::string &path) {
+  Node *node = nullptr;
+  Status status = createNode(path, false, node);
+  if (status == Status::AlreadyExists) {
+    return Status::Ok;
+  }
+  return status;
+}
+
+Status FileSystem::write(const std::string &path, std::string content,
+                         bool isAppend) {
+  if (path.empty()) {
+    return Status::InvalidArguments;
+  }
+  Node *node = resolve(path);
+  if (!node) {
+    Status status = createNode(path, false, node);
+    if (status != Status::Ok) {
+      return status;
+    }
+  }
+  if (node->isDirectory) {
+    return Status::NotAFile;
+  }
+  if (isAppend) {
+    node->content += content;
+  } else {
+    node->content = std::move(content);
+  }
   return Status::Ok;
 }
