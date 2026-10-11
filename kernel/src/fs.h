@@ -46,6 +46,8 @@ private:
   Status resolveParent(const std::string &path, Node *&parent,
                        std::string &name) const;
 
+  Node *getStartNodeFor(const std::string &path) const;
+  Node *walkPath(Node *currNode, const std::vector<std::string> &pieces) const;
   static std::string getPath(const Node *node);
   static bool isValidName(const std::string &name);
   static std::vector<std::string> splitPath(const std::string &path);

@@ -26,14 +26,57 @@ bool FileSystem::isValidName(const std::string &name) {
 }
 
 Node *FileSystem::resolve(const std::string &path) const {
-  Node *currNode = nullptr;
-  if (!path.empty() && path[0] == '/') {
-    currNode = root_.get();
-  } else {
-    currNode = currDirectory_;
-  }
-
+  auto currNode = getStartNodeFor(path);
   auto pieces = splitPath(path);
+  return walkPath(currNode, pieces);
+}
+
+Status FileSystem::resolveParent(const std::string &path, Node *&parent,
+                                 std::string &name) const {
+  auto pieces = splitPath(path);
+  if (pieces.empty()) {
+    return Status::InvalidName;
+  }
+  std::string newName = std::move(pieces.back());
+  if (!isValidName(newName)) {
+    return Status::InvalidName;
+  }
+  pieces.pop_back();
+  auto currNode = getStartNodeFor(path);
+  auto dir = walkPath(currNode, pieces);
+  if (!dir) {
+    return Status::NotFound;
+  }
+  if (!dir->isDirectory) {
+    return Status::NotADirectory;
+  }
+  parent = dir;
+  name = std::move(newName);
+  return Status::Ok;
+}
+
+std::vector<std::string> FileSystem::splitPath(const std::string &path) {
+  // take a string like 'a/b/c' and split it into the different pieces
+  std::vector<std::string> res;
+  std::string piece;
+  for (char c : path) {
+    if (c == '/') {
+      if (!piece.empty()) {
+        res.push_back(std::move(piece));
+      }
+      piece.clear();
+    } else {
+      piece += c;
+    }
+  }
+  if (!piece.empty()) {
+    res.push_back(std::move(piece));
+  }
+  return res;
+}
+
+Node *FileSystem::walkPath(Node *currNode,
+                           const std::vector<std::string> &pieces) const {
   for (const auto &piece : pieces) {
     if (!currNode->isDirectory) {
       return nullptr;
@@ -57,24 +100,8 @@ Node *FileSystem::resolve(const std::string &path) const {
   return currNode;
 }
 
-std::vector<std::string> FileSystem::splitPath(const std::string &path) {
-  // take a string like 'a/b/c' and split it into the different pieces
-  std::vector<std::string> res;
-  std::string piece;
-  for (char c : path) {
-    if (c == '/') {
-      if (!piece.empty()) {
-        res.push_back(std::move(piece));
-      }
-      piece.clear();
-    } else {
-      piece += c;
-    }
-  }
-  if (!piece.empty()) {
-    res.push_back(std::move(piece));
-  }
-  return res;
+Node *FileSystem::getStartNodeFor(const std::string &path) const {
+  return (!path.empty() && path[0] == '/') ? root_.get() : currDirectory_;
 }
 
 // Public Methods
