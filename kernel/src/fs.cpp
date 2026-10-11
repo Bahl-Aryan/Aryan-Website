@@ -107,23 +107,44 @@ Node *FileSystem::getStartNodeFor(const std::string &path) const {
 // Public Methods
 std::string FileSystem::pwd() const { return getPath(currDirectory_); }
 
-std::vector<std::string> FileSystem::ls() const {
-  std::vector<std::string> res;
-  for (const auto &[name, child] : currDirectory_->children) {
-    if (child->isDirectory) {
-      res.push_back(name + "/");
-    } else {
-      res.push_back(name);
-    }
-  }
-  return res;
+Status FileSystem::ls(std::vector<std::string> &out) const {
+  return ls(".", out);
 }
 
-Status FileSystem::mkdir(const std::string &name) {
-  if (!isValidName(name)) {
-    return Status::InvalidName;
+Status FileSystem::ls(const std::string &path,
+                      std::vector<std::string> &out) const {
+  if (path.empty()) {
+    return Status::NotFound;
   }
-  auto &children = currDirectory_->children;
+  Node *node = resolve(path);
+  if (!node) {
+    return Status::NotFound;
+  }
+  std::vector<std::string> res;
+  if (node->isDirectory) {
+    for (auto &[name, child] : node->children) {
+      if (child->isDirectory) {
+        res.push_back(name + '/');
+      } else {
+        res.push_back(name);
+      }
+    }
+  } else {
+    res.push_back(node->name);
+  }
+  out = std::move(res);
+  return Status::Ok;
+}
+
+Status FileSystem::mkdir(const std::string &path) {
+  Node *parent = nullptr;
+  std::string name;
+  // use resolveParent to set parent and name
+  Status status = resolveParent(path, parent, name);
+  if (status != Status::Ok) {
+    return status;
+  }
+  auto &children = parent->children;
   auto node = std::make_unique<Node>(true, name);
   // try_emplace returns false if key exists in children alr
   // can use that to return AlreadyExists instead of .count on map
@@ -131,7 +152,7 @@ Status FileSystem::mkdir(const std::string &name) {
   if (!success) {
     return Status::AlreadyExists;
   }
-  it->second->parent = currDirectory_;
+  it->second->parent = parent;
   return Status::Ok;
 }
 

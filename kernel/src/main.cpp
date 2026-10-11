@@ -16,32 +16,39 @@ static void check(bool ok, const std::string &what) {
 int main() {
   FileSystem fs;
 
+  // list(): plain ls of the current folder, as a vector (empty if ls fails)
+  auto list = [&fs]() {
+    std::vector<std::string> out;
+    fs.ls(out);
+    return out;
+  };
+
   // slice 1
   check(fs.pwd() == "/", "pwd at root is /");
 
   // slice 2: mkdir + ls
-  check(fs.ls().empty(), "ls on a fresh filesystem is empty");
+  check(list().empty(), "ls on a fresh filesystem is empty");
 
   check(fs.mkdir("b") == Status::Ok, "mkdir b");
   check(fs.mkdir("a") == Status::Ok, "mkdir a");
-  check(fs.ls() == std::vector<std::string>{"a/", "b/"},
+  check(list() == std::vector<std::string>{"a/", "b/"},
         "ls shows a/ b/ in alphabetical order");
 
   check(fs.mkdir("a") == Status::AlreadyExists,
         "mkdir a again -> AlreadyExists");
   check(fs.mkdir("") == Status::InvalidName, "mkdir \"\" -> InvalidName");
-  check(fs.mkdir("x/y") == Status::InvalidName, "mkdir x/y -> InvalidName");
+  check(fs.mkdir("x/y") == Status::NotFound, "mkdir x/y -> NotFound (no folder x)");
   check(fs.mkdir(".") == Status::InvalidName, "mkdir . -> InvalidName");
   check(fs.mkdir("..") == Status::InvalidName, "mkdir .. -> InvalidName");
-  check(fs.ls().size() == 2, "failed mkdirs didn't add anything");
+  check(list().size() == 2, "failed mkdirs didn't add anything");
 
   // slice 3: cd
   check(fs.cd("a") == Status::Ok, "cd a");
   check(fs.pwd() == "/a", "pwd after cd a is /a");
-  check(fs.ls().empty(), "ls inside a is empty");
+  check(list().empty(), "ls inside a is empty");
 
   check(fs.mkdir("c") == Status::Ok, "mkdir c inside a");
-  check(fs.ls() == std::vector<std::string>{"c/"}, "ls inside a shows c/");
+  check(list() == std::vector<std::string>{"c/"}, "ls inside a shows c/");
   check(fs.cd("c") == Status::Ok, "cd c");
   check(fs.pwd() == "/a/c", "pwd after cd c is /a/c (nested)");
 
@@ -55,7 +62,7 @@ int main() {
   check(fs.cd("..") == Status::Ok, "cd .. at root is Ok");
   check(fs.pwd() == "/", "cd .. at root stays at /");
 
-  check(fs.ls() == std::vector<std::string>{"a/", "b/"},
+  check(list() == std::vector<std::string>{"a/", "b/"},
         "root still shows only a/ b/ (c went inside a)");
 
   check(fs.cd("nope") == Status::NotFound, "cd nope -> NotFound");
@@ -96,8 +103,62 @@ int main() {
   cdFrom("/a", "", Status::InvalidName, "/a");
   fs.cd("/");
 
+  // slice 4: mkdir with paths
+  // listAt: ls(path) must return `expected` status and exactly `names`
+  auto listAt = [&fs](const std::string &path, Status expected,
+                      const std::vector<std::string> &names) {
+    std::vector<std::string> out;
+    return fs.ls(path, out) == expected && out == names;
+  };
+  fs.cd("/a/c");
+  check(fs.mkdir("deep") == Status::Ok, "from /a/c: mkdir deep");
+  check(fs.mkdir("/a/c/deep") == Status::AlreadyExists,
+        "mkdir /a/c/deep again -> AlreadyExists");
+  check(fs.mkdir("/b/x") == Status::Ok, "from /a/c: mkdir /b/x (absolute)");
+  check(fs.mkdir("../y") == Status::Ok, "from /a/c: mkdir ../y (makes /a/y)");
+  fs.cd("/");
+  check(fs.mkdir("a//z/") == Status::Ok, "from /: mkdir a//z/ (makes /a/z)");
+  check(fs.cd("/a/c/deep") == Status::Ok && fs.pwd() == "/a/c/deep",
+        "cd into the new folder, pwd is /a/c/deep (parent pointer is right)");
+  check(fs.cd("/b/x") == Status::Ok && fs.pwd() == "/b/x",
+        "cd /b/x, pwd is /b/x");
+  fs.cd("/");
+
+  check(fs.mkdir("nope/x") == Status::NotFound, "mkdir nope/x -> NotFound");
+  check(fs.mkdir("/") == Status::InvalidName, "mkdir / -> InvalidName");
+  check(fs.mkdir("a/..") == Status::InvalidName, "mkdir a/.. -> InvalidName");
+  check(fs.mkdir("a/.") == Status::InvalidName, "mkdir a/. -> InvalidName");
+  check(list() == std::vector<std::string>{"a/", "b/"},
+        "failed mkdirs didn't add anything at root");
+
+  // slice 4: ls with paths (tree: /a/{c/deep, y, z}, /b/x)
+  check(listAt(".", Status::Ok, {"a/", "b/"}), "ls . at root");
+  check(listAt("/", Status::Ok, {"a/", "b/"}), "ls /");
+  check(listAt("/a", Status::Ok, {"c/", "y/", "z/"}),
+        "ls /a shows c/ y/ z/ in order");
+  check(listAt("a/c", Status::Ok, {"deep/"}), "ls a/c (relative)");
+  check(listAt("/a/c/deep", Status::Ok, {}), "ls an empty folder -> Ok, []");
+  fs.cd("/a/c");
+  check(listAt("..", Status::Ok, {"c/", "y/", "z/"}), "from /a/c: ls ..");
+  check(listAt("../../b", Status::Ok, {"x/"}), "from /a/c: ls ../../b");
+  check(list() == std::vector<std::string>{"deep/"},
+        "plain ls lists the current folder");
+  fs.cd("/");
+  check(listAt("nope", Status::NotFound, {}), "ls nope -> NotFound");
+  check(listAt("", Status::NotFound, {}), "ls \"\" -> NotFound");
+  {
+    std::vector<std::string> out = {"old"};
+    fs.ls("nope", out);
+    check(out == std::vector<std::string>{"old"},
+          "failed ls leaves out untouched");
+    fs.ls("/b", out);
+    check(out == std::vector<std::string>{"x/"},
+          "ls replaces out instead of appending");
+  }
+  // ls on a file -> just its name: needs touch, checked in slice 5
+
   std::cout << "\nls:\n";
-  for (const auto &entry : fs.ls()) {
+  for (const auto &entry : list()) {
     std::cout << "  " << entry << '\n';
   }
 

@@ -31,8 +31,9 @@ public:
   FileSystem();
 
   std::string pwd() const;
-  std::vector<std::string> ls() const;
-  Status mkdir(const std::string &name);
+  Status ls(std::vector<std::string> &out) const;
+  Status ls(const std::string &path, std::vector<std::string> &out) const;
+  Status mkdir(const std::string &path);
   Status cd(const std::string &path);
 
 private:
