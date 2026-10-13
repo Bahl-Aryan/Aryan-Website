@@ -1,8 +1,26 @@
 #include "fs.h"
+#include "config.h"
 
-// Constructor
+// FileSystem Constructor
 FileSystem::FileSystem()
     : root_(std::make_unique<Node>(true, "")), currDirectory_(root_.get()) {}
+
+// Node Destructor
+Node::~Node() {
+  std::vector<std::unique_ptr<Node>> nodes;
+  for (auto &[childName, child] : children) {
+    nodes.push_back(std::move(child));
+  }
+  children.clear();
+  while (!nodes.empty()) {
+    std::unique_ptr<Node> curr = std::move(nodes.back());
+    nodes.pop_back();
+    for (auto &[childName, child] : curr->children) {
+      nodes.push_back(std::move(child));
+    }
+    curr->children.clear();
+  }
+}
 
 // Private Methods
 std::string FileSystem::getPath(const Node *node) {
@@ -19,7 +37,7 @@ std::string FileSystem::getPath(const Node *node) {
 
 bool FileSystem::isValidName(const std::string &name) {
   if (name.empty() || name.find('/') != std::string::npos || name == "." ||
-      name == "..") {
+      name == ".." || name.size() > Config::MAX_FILENAME_LENGTH) {
     return false;
   }
   return true;
@@ -55,6 +73,15 @@ Status FileSystem::resolveParent(const std::string &path, Node *&parent,
   return Status::Ok;
 }
 
+std::size_t FileSystem::getDepthOf(const Node *node) {
+  size_t depth = 0;
+  while (node->parent) {
+    depth++;
+    node = node->parent;
+  }
+  return depth;
+}
+
 Status FileSystem::createNode(const std::string &path, bool isDirectory,
                               Node *&created) {
   Node *parent = nullptr;
@@ -63,6 +90,9 @@ Status FileSystem::createNode(const std::string &path, bool isDirectory,
   Status status = resolveParent(path, parent, name);
   if (status != Status::Ok) {
     return status;
+  }
+  if (getDepthOf(parent) >= Config::MAX_DIRECTORY_DEPTH) {
+    return Status::MaxDepthReached;
   }
   auto &children = parent->children;
   auto node = std::make_unique<Node>(isDirectory, name);
@@ -124,6 +154,16 @@ Node *FileSystem::walkPath(Node *currNode,
 
 Node *FileSystem::getStartNodeFor(const std::string &path) const {
   return (!path.empty() && path[0] == '/') ? root_.get() : currDirectory_;
+}
+
+bool FileSystem::isAncestor(const Node *ancestor, const Node *node) {
+  while (node) {
+    if (node == ancestor) {
+      return true;
+    }
+    node = node->parent;
+  }
+  return false;
 }
 
 // Public Methods
@@ -208,6 +248,9 @@ Status FileSystem::write(const std::string &path, std::string content,
   if (path.empty()) {
     return Status::InvalidArguments;
   }
+  if (content.size() > Config::MAX_FILE_SIZE_BYTES) {
+    return Status::MaxFileSizeReached;
+  }
   Node *node = resolve(path);
   if (!node) {
     Status status = createNode(path, false, node);
@@ -219,9 +262,89 @@ Status FileSystem::write(const std::string &path, std::string content,
     return Status::NotAFile;
   }
   if (isAppend) {
-    node->content += content;
+    if (node->content.size() + content.size() > Config::MAX_FILE_SIZE_BYTES) {
+      return Status::MaxFileSizeReached;
+    } else {
+      node->content += content;
+    }
   } else {
     node->content = std::move(content);
   }
+  return Status::Ok;
+}
+
+Status FileSystem::rm(const std::string &path, bool recursive) {
+  if (path.empty()) {
+    return Status::InvalidArguments;
+  }
+  Node *node = resolve(path);
+  if (!node) {
+    return Status::NotFound;
+  }
+  if (node == root_.get()) {
+    return Status::PermissionDenied;
+  }
+  if (isAncestor(node, currDirectory_)) {
+    return Status::PermissionDenied;
+  }
+  if (node->isDirectory && !recursive) {
+    return Status::NotAFile;
+  }
+  auto it = (node->parent->children).find(node->name);
+  node->parent->children.erase(it);
+  return Status::Ok;
+}
+
+Status FileSystem::mv(const std::string &source,
+                      const std::string &destination) {
+  if (source.empty() || destination.empty()) {
+    return Status::InvalidArguments;
+  }
+  Node *src = resolve(source);
+  Node *dest = resolve(destination);
+  if (src == root_.get()) {
+    return Status::PermissionDenied;
+  }
+  if (!src) {
+    return Status::NotFound;
+  }
+  if (src->isDirectory) {
+    return Status::NotAFile;
+  }
+  if (dest && dest->isDirectory) {
+    if (isAncestor(src, dest)) {
+      return Status::PermissionDenied;
+    }
+    auto it = dest->children.find(src->name);
+    if (it != dest->children.end()) {
+      if (it->second.get() == src) {
+        return Status::Ok; // no-op if we src to the same location
+      }
+      return Status::AlreadyExists;
+    }
+    auto node = src->parent->children.extract(src->name);
+    node.mapped()->parent = dest;
+    dest->children.insert(std::move(node));
+    return Status::Ok;
+  }
+  Node *dParent = nullptr;
+  std::string name;
+  Status status = resolveParent(destination, dParent, name);
+  if (status != Status::Ok) {
+    return status;
+  }
+  if (isAncestor(src, dParent)) {
+    return Status::PermissionDenied;
+  }
+  auto it = dParent->children.find(name);
+  if (it != dParent->children.end()) {
+    // overwrite this file by deleting the original entry
+    dParent->children.erase(it);
+  }
+  auto node = src->parent->children.extract(src->name);
+  node.key() = name;
+  node.mapped()->name = name;
+  node.mapped()->parent = dParent;
+  dParent->children.insert(std::move(node));
   return Status::Ok;
 }

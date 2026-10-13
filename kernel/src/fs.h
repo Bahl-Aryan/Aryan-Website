@@ -14,17 +14,21 @@ struct Node {
 
   // Node constructor
   Node(bool isDir, const std::string &n) : isDirectory(isDir), name(n) {}
+  // Node destructor
+  ~Node();
 };
 
 enum class Status {
-  Ok,                // success
-  NotFound,          // path doesn't exist
-  NotADirectory,     // tried to run a dir command on a file
-  NotAFile,          // tried to run a file command on a dir
-  AlreadyExists,     // create a dir or file that already exists
-  DirectoryNotEmpty, // rm on a non-empty dir without -r
-  InvalidName,       // empty or name containing `/`
-  InvalidArguments,  // invalid arguments passed
+  Ok,                 // success
+  NotFound,           // path doesn't exist
+  NotADirectory,      // tried to run a dir command on a file
+  NotAFile,           // tried to run a file command on a dir
+  AlreadyExists,      // create a dir or file that already exists
+  InvalidName,        // empty or name containing `/`
+  InvalidArguments,   // invalid arguments passed
+  PermissionDenied,   // commands that are not allowed
+  MaxDepthReached,    // max depth of children reached because I said so
+  MaxFileSizeReached, // max content length
 };
 
 class FileSystem {
@@ -41,6 +45,8 @@ public:
 
   // write into file operator, > and >>
   Status write(const std::string &path, std::string content, bool isAppend);
+  Status rm(const std::string &path, bool recursive);
+  Status mv(const std::string &source, const std::string &destination);
 
 private:
   std::unique_ptr<Node> root_; // single root that owns the whole tree
@@ -58,4 +64,8 @@ private:
   static std::string getPath(const Node *node);
   static bool isValidName(const std::string &name);
   static std::vector<std::string> splitPath(const std::string &path);
+
+  // is node B below node A
+  static bool isAncestor(const Node *ancestor, const Node *node);
+  static std::size_t getDepthOf(const Node *node);
 };
