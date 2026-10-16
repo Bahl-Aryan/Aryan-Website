@@ -69,4 +69,5 @@ private:
   static bool isAncestor(const Node *ancestor, const Node *node);
   static std::size_t getDepthOf(const Node *node);
   static std::size_t getHeightOf(const Node *node);
+  static bool endsWithSlash(const std::string &path);
 };

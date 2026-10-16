@@ -44,10 +44,18 @@ bool FileSystem::isValidName(const std::string &name) {
   return true;
 }
 
+bool FileSystem::endsWithSlash(const std::string &path) {
+  return !path.empty() && path.back() == '/';
+}
+
 Node *FileSystem::resolve(const std::string &path) const {
   auto currNode = getStartNodeFor(path);
   auto pieces = splitPath(path);
-  return walkPath(currNode, pieces);
+  Node *node = walkPath(currNode, pieces);
+  if (node && !node->isDirectory && endsWithSlash(path)) {
+    return nullptr;
+  }
+  return node;
 }
 
 Status FileSystem::resolveParent(const std::string &path, Node *&parent,
@@ -99,6 +107,9 @@ Status FileSystem::createNode(const std::string &path, bool isDirectory,
                               Node *&created) {
   Node *parent = nullptr;
   std::string name;
+  if (!isDirectory && endsWithSlash(path)) {
+    return Status::NotADirectory;
+  }
   // use resolveParent to set parent and name
   Status status = resolveParent(path, parent, name);
   if (status != Status::Ok) {
@@ -330,6 +341,9 @@ Status FileSystem::mv(const std::string &source,
     targetParent = dest;
     targetName = src->name;
   } else {
+    if (endsWithSlash(destination)) {
+      return Status::NotADirectory;
+    }
     Status status = resolveParent(destination, targetParent, targetName);
     if (status != Status::Ok) {
       return status;
