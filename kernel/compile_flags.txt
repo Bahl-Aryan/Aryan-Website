@@ -2,3 +2,5 @@
 -std=c++17
 -Wall
 -Wextra
+-Isrc
+-isystem/opt/homebrew/include
