@@ -2,10 +2,12 @@
 #include "config.h"
 #include <algorithm>
 
+// ---------------------------------------------------------------------------
 // FileSystem Constructor
 FileSystem::FileSystem()
     : root_(std::make_unique<Node>(true, "")), currDirectory_(root_.get()) {}
 
+// ---------------------------------------------------------------------------
 // Node Destructor
 Node::~Node() {
   std::vector<std::unique_ptr<Node>> nodes;
@@ -23,6 +25,7 @@ Node::~Node() {
   }
 }
 
+// ---------------------------------------------------------------------------
 // Private Methods
 std::string FileSystem::getPath(const Node *node) {
   if (!node->parent) {
@@ -190,6 +193,7 @@ bool FileSystem::isAncestor(const Node *ancestor, const Node *node) {
   return false;
 }
 
+// ---------------------------------------------------------------------------
 // Public Methods
 std::string FileSystem::pwd() const { return getPath(currDirectory_); }
 
