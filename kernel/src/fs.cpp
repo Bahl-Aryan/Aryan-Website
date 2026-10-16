@@ -1,5 +1,6 @@
 #include "fs.h"
 #include "config.h"
+#include <algorithm>
 
 // FileSystem Constructor
 FileSystem::FileSystem()
@@ -80,6 +81,18 @@ std::size_t FileSystem::getDepthOf(const Node *node) {
     node = node->parent;
   }
   return depth;
+}
+
+std::size_t FileSystem::getHeightOf(const Node *node) {
+  if (!node || !node->isDirectory || node->children.empty()) {
+    return 0;
+  }
+  size_t maxHeight = 0;
+  for (const auto &[childName, child] : node->children) {
+    size_t childHeight = getHeightOf(child.get());
+    maxHeight = std::max(maxHeight, childHeight);
+  }
+  return 1 + maxHeight;
 }
 
 Status FileSystem::createNode(const std::string &path, bool isDirectory,
@@ -297,6 +310,7 @@ Status FileSystem::rm(const std::string &path, bool recursive) {
 
 Status FileSystem::mv(const std::string &source,
                       const std::string &destination) {
+  // first do all the preliminary checks
   if (source.empty() || destination.empty()) {
     return Status::InvalidArguments;
   }
@@ -308,43 +322,49 @@ Status FileSystem::mv(const std::string &source,
   if (!src) {
     return Status::NotFound;
   }
-  if (src->isDirectory) {
-    return Status::NotAFile;
-  }
+
+  // next lets set our target parent and target name
+  Node *targetParent = nullptr;
+  std::string targetName;
   if (dest && dest->isDirectory) {
-    if (isAncestor(src, dest)) {
-      return Status::PermissionDenied;
+    targetParent = dest;
+    targetName = src->name;
+  } else {
+    Status status = resolveParent(destination, targetParent, targetName);
+    if (status != Status::Ok) {
+      return status;
     }
-    auto it = dest->children.find(src->name);
-    if (it != dest->children.end()) {
-      if (it->second.get() == src) {
-        return Status::Ok; // no-op if we src to the same location
-      }
-      return Status::AlreadyExists;
-    }
-    auto node = src->parent->children.extract(src->name);
-    node.mapped()->parent = dest;
-    dest->children.insert(std::move(node));
-    return Status::Ok;
   }
-  Node *dParent = nullptr;
-  std::string name;
-  Status status = resolveParent(destination, dParent, name);
-  if (status != Status::Ok) {
-    return status;
-  }
-  if (isAncestor(src, dParent)) {
+
+  // checks before we start extracting/moving files
+  if (isAncestor(src, targetParent)) {
     return Status::PermissionDenied;
   }
-  auto it = dParent->children.find(name);
-  if (it != dParent->children.end()) {
-    // overwrite this file by deleting the original entry
-    dParent->children.erase(it);
+  bool overwriteAllowed = false;
+  auto it = targetParent->children.find(targetName);
+  if (it != targetParent->children.end()) {
+    if (it->second.get() == src) {
+      return Status::Ok;
+    }
+    if (!src->isDirectory && !it->second->isDirectory) {
+      overwriteAllowed = true;
+    } else {
+      return Status::AlreadyExists;
+    }
+  }
+  if (getHeightOf(src) + 1 + getDepthOf(targetParent) >
+      Config::MAX_DIRECTORY_DEPTH) {
+    return Status::MaxDepthReached;
+  }
+
+  // now we can start moving the files
+  if (overwriteAllowed) {
+    targetParent->children.erase(it);
   }
   auto node = src->parent->children.extract(src->name);
-  node.key() = name;
-  node.mapped()->name = name;
-  node.mapped()->parent = dParent;
-  dParent->children.insert(std::move(node));
+  node.key() = targetName;
+  node.mapped()->name = targetName;
+  node.mapped()->parent = targetParent;
+  targetParent->children.insert(std::move(node));
   return Status::Ok;
 }
