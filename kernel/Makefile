@@ -41,7 +41,7 @@ all: $(BUILD)/kernel
 $(BUILD)/kernel: $(LIB_OBJS) $(APP_OBJS)
 	$(CXX) $(CXXFLAGS) $(SANITIZE) $^ -o $@
 
-$(BUILD)/test_fs: $(LIB_OBJS) $(TEST_OBJS)
+$(BUILD)/run_tests: $(LIB_OBJS) $(TEST_OBJS)
 	$(CXX) $(CXXFLAGS) $(SANITIZE) $^ $(GTEST_LDFLAGS) -o $@
 
 $(BUILD)/src/%.o: src/%.cpp
@@ -62,8 +62,8 @@ run: $(BUILD)/kernel
 # positives inside gtest's own startup. Only that check is turned off; every
 # other ASan/UBSan check still runs. (The real fix is building gtest from
 # source with the same flags, e.g. via CMake FetchContent.)
-test: $(BUILD)/test_fs
-	ASAN_OPTIONS=detect_container_overflow=0 ./$(BUILD)/test_fs
+test: $(BUILD)/run_tests
+	ASAN_OPTIONS=detect_container_overflow=0 ./$(BUILD)/run_tests
 
 clean:
 	rm -rf $(BUILD)
