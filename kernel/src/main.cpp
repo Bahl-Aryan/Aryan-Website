@@ -1,23 +1,21 @@
-#include "fs.h"
+#include "shell.h"
 #include <iostream>
 #include <string>
 
 int main() {
-  FileSystem fs;
+  Shell shell;
   std::string line;
   while (true) {
-    std::cout << "aryanOS:" << fs.pwd() << " $ ";
+    std::cout << shell.prompt();
     if (!std::getline(std::cin, line)) {
       std::cout << "\nsee you next time :)\n";
       break;
     }
-    if (line == "exit") {
+    // execute handles blank lines and exit itself; output already ends in \n
+    std::cout << shell.execute(line);
+    if (shell.shouldExit()) {
       break;
     }
-    if (line.empty()) {
-      continue;
-    }
-    std::cout << "typed " << line << "\n";
   }
   return 0;
 }

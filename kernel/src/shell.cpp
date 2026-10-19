@@ -1,8 +1,13 @@
 #include "shell.h"
+#include "commands.h"
 #include <cctype>
 
 // ---------------------------------------------------------------------------
 // Public Methods
+std::string Shell::prompt() const { return "aryanOS:" + fs_.pwd() + " $ "; }
+
+bool Shell::shouldExit() const { return exitRequested_; }
+
 std::vector<std::string> Shell::splitWords(const std::string &line) {
   // take a string like 'ls notes/' and split it into the different words
   std::vector<std::string> res;
@@ -64,4 +69,68 @@ Status Shell::parseCommand(const std::string &line, ParsedCommand &out) {
   // std::move to hand over everything to outparam
   out = std::move(cmd);
   return Status::Ok;
+}
+
+std::string Shell::execute(const std::string &line) {
+  ParsedCommand cmd;
+  Status status = parseCommand(line, cmd);
+  if (status != Status::Ok) {
+    return "kernel: syntax error\n";
+  }
+  if (cmd.words.empty()) {
+    return ""; // nothing to run
+  }
+  std::string cmdName = cmd.words[0];
+  if (cmdName == "exit") {
+    exitRequested_ = true;
+    return "";
+  }
+  auto info = findCommand(cmdName);
+  if (info == nullptr) {
+    return "kernel: " + cmdName + ": command not found\n";
+  }
+  std::string output;
+  status = info->fn(fs_, cmd.words, output);
+  if (status == Status::InvalidArguments) {
+    return cmdName + ": usage: " + info->usage + "\n";
+  }
+  if (status != Status::Ok) {
+    return cmdName + ": " + convertStatus(status) + "\n";
+  }
+  if (cmd.redirectExists) {
+    status = fs_.write(cmd.redirectTarget, output, cmd.shouldAppend);
+    if (status != Status::Ok) {
+      return "kernel: " + cmd.redirectTarget + ": " + convertStatus(status) +
+             "\n";
+    } else {
+      return ""; // output made it to the file
+    }
+  }
+  return output;
+}
+// ---------------------------------------------------------------------------
+// Private Methods
+std::string Shell::convertStatus(Status status) {
+  switch (status) {
+  case Status::Ok:
+    return "";
+  case Status::NotFound:
+    return "No such file or directory";
+  case Status::NotADirectory:
+    return "Not a directory";
+  case Status::NotAFile:
+    return "Not a file";
+  case Status::AlreadyExists:
+    return "Object already exists";
+  case Status::InvalidName:
+    return "Invalid name";
+  case Status::InvalidArguments:
+    return "Invalid arguments";
+  case Status::PermissionDenied:
+    return "Permission denied";
+  case Status::MaxDepthReached:
+    return "Folder depth reached";
+  case Status::MaxFileSizeReached:
+    return "File too large";
+  }
 }
