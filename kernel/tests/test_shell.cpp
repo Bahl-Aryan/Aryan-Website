@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "config.h"
 #include "shell.h"
 #include "test_helpers.h"
 
@@ -177,3 +178,265 @@ INSTANTIATE_TEST_SUITE_P(
         ">>>>>>",             // only operators
         "echo hi >> >> >>",   // operators after the command
         "echo hi >>> a"));    // >> then > : two operators
+
+// ---------------------------------------------------------------------------
+// Shell::execute: whole command lines in, exact output text out.
+// Each test gets a fresh Shell (and so a fresh FileSystem).
+
+class ShellTest : public ::testing::Test {
+protected:
+  Shell shell;
+
+  std::string Run(const std::string &line) { return shell.execute(line); }
+};
+
+TEST_F(ShellTest, PromptShowsTheCurrentFolder) {
+  EXPECT_EQ(shell.prompt(), "aryanOS:/ $ ");
+  ASSERT_EQ(Run("mkdir a"), "");
+  ASSERT_EQ(Run("cd a"), "");
+  EXPECT_EQ(shell.prompt(), "aryanOS:/a $ ");
+}
+
+TEST_F(ShellTest, BlankLinesPrintNothing) {
+  EXPECT_EQ(Run(""), "");
+  EXPECT_EQ(Run("   "), "");
+  EXPECT_EQ(Run("\t"), "");
+  EXPECT_FALSE(shell.shouldExit());
+}
+
+TEST_F(ShellTest, UnknownCommand) {
+  EXPECT_EQ(Run("foo"), "kernel: foo: command not found\n");
+  EXPECT_EQ(Run("foo bar baz"), "kernel: foo: command not found\n");
+}
+
+TEST_F(ShellTest, SyntaxErrorRunsNothing) {
+  EXPECT_EQ(Run("echo hi >"), "kernel: syntax error\n");
+  EXPECT_EQ(Run("echo a > b.txt > c.txt"), "kernel: syntax error\n");
+  EXPECT_EQ(Run("> a.txt"), "kernel: syntax error\n");
+  EXPECT_EQ(Run("ls"), "");  // none of the targets were created
+}
+
+TEST_F(ShellTest, ExitSetsShouldExit) {
+  EXPECT_FALSE(shell.shouldExit());
+  EXPECT_EQ(Run("exit"), "");
+  EXPECT_TRUE(shell.shouldExit());
+}
+
+TEST_F(ShellTest, ExitIgnoresSurroundingWhitespace) {
+  EXPECT_EQ(Run("   exit  "), "");
+  EXPECT_TRUE(shell.shouldExit());
+}
+
+TEST_F(ShellTest, OtherCommandsDoNotRequestExit) {
+  Run("pwd");
+  Run("foo");
+  Run("echo hi >");
+  EXPECT_FALSE(shell.shouldExit());
+}
+
+// pwd / cd
+
+TEST_F(ShellTest, PwdPrintsTheCurrentFolder) {
+  EXPECT_EQ(Run("pwd"), "/\n");
+}
+
+TEST_F(ShellTest, CdChangesFolderAndStateCarriesOver) {
+  ASSERT_EQ(Run("mkdir a"), "");
+  ASSERT_EQ(Run("mkdir a/b"), "");
+  EXPECT_EQ(Run("cd a/b"), "");
+  EXPECT_EQ(Run("pwd"), "/a/b\n");
+  EXPECT_EQ(Run("cd .."), "");
+  EXPECT_EQ(Run("pwd"), "/a\n");
+}
+
+TEST_F(ShellTest, CdErrors) {
+  ASSERT_EQ(Run("touch f.txt"), "");
+  EXPECT_EQ(Run("cd nope"), "cd: No such file or directory\n");
+  EXPECT_EQ(Run("cd f.txt"), "cd: Not a directory\n");
+  EXPECT_EQ(Run("cd"), "cd: usage: cd <path>\n");
+  EXPECT_EQ(Run("cd a b"), "cd: usage: cd <path>\n");
+  EXPECT_EQ(Run("pwd"), "/\n");
+}
+
+// ls / mkdir
+
+TEST_F(ShellTest, LsPrintsOneNamePerLine) {
+  EXPECT_EQ(Run("ls"), "");  // empty folder: no blank line
+  ASSERT_EQ(Run("mkdir b"), "");
+  ASSERT_EQ(Run("mkdir a"), "");
+  ASSERT_EQ(Run("touch c.txt"), "");
+  EXPECT_EQ(Run("ls"), "a/\nb/\nc.txt\n");
+  EXPECT_EQ(Run("ls /"), "a/\nb/\nc.txt\n");
+  EXPECT_EQ(Run("ls a"), "");
+  EXPECT_EQ(Run("ls c.txt"), "c.txt\n");
+}
+
+TEST_F(ShellTest, LsErrors) {
+  EXPECT_EQ(Run("ls nope"), "ls: No such file or directory\n");
+  EXPECT_EQ(Run("ls a b"), "ls: usage: ls [path]\n");
+}
+
+TEST_F(ShellTest, MkdirOutputAndErrors) {
+  EXPECT_EQ(Run("mkdir a"), "");
+  EXPECT_EQ(Run("mkdir a"), "mkdir: Object already exists\n");
+  EXPECT_EQ(Run("mkdir nope/x"), "mkdir: No such file or directory\n");
+  EXPECT_EQ(Run("mkdir"), "mkdir: usage: mkdir <path>\n");
+  EXPECT_EQ(Run("mkdir x y"), "mkdir: usage: mkdir <path>\n");
+  EXPECT_EQ(Run("ls"), "a/\n");
+}
+
+// echo
+
+TEST_F(ShellTest, EchoJoinsWordsWithSingleSpaces) {
+  EXPECT_EQ(Run("echo hi"), "hi\n");
+  EXPECT_EQ(Run("echo hello world"), "hello world\n");
+  EXPECT_EQ(Run("echo   a    b   "), "a b\n");  // no trailing space
+  EXPECT_EQ(Run("echo"), "\n");
+}
+
+// touch / cat
+
+TEST_F(ShellTest, TouchAndCat) {
+  EXPECT_EQ(Run("touch f.txt"), "");
+  EXPECT_EQ(Run("cat f.txt"), "");
+  EXPECT_EQ(Run("touch"), "touch: usage: touch <path>\n");
+}
+
+TEST_F(ShellTest, CatErrors) {
+  ASSERT_EQ(Run("mkdir d"), "");
+  EXPECT_EQ(Run("cat nope"), "cat: No such file or directory\n");
+  EXPECT_EQ(Run("cat d"), "cat: Is a directory\n");
+  EXPECT_EQ(Run("cat"), "cat: usage: cat <path>\n");
+  EXPECT_EQ(Run("cat a b"), "cat: usage: cat <path>\n");
+}
+
+// redirects
+
+TEST_F(ShellTest, RedirectWritesOutputToAFileInsteadOfPrinting) {
+  EXPECT_EQ(Run("echo hello world > notes.txt"), "");
+  EXPECT_EQ(Run("cat notes.txt"), "hello world\n");
+}
+
+TEST_F(ShellTest, RedirectWithoutSpaces) {
+  EXPECT_EQ(Run("echo hi>a.txt"), "");
+  EXPECT_EQ(Run("echo there>>a.txt"), "");
+  EXPECT_EQ(Run("cat a.txt"), "hi\nthere\n");
+}
+
+TEST_F(ShellTest, ReplaceOverwritesAndAppendAddsLines) {
+  ASSERT_EQ(Run("echo one > log.txt"), "");
+  ASSERT_EQ(Run("echo two >> log.txt"), "");
+  ASSERT_EQ(Run("echo three >> log.txt"), "");
+  EXPECT_EQ(Run("cat log.txt"), "one\ntwo\nthree\n");
+
+  ASSERT_EQ(Run("echo fresh > log.txt"), "");
+  EXPECT_EQ(Run("cat log.txt"), "fresh\n");
+}
+
+TEST_F(ShellTest, RedirectWorksForAnyCommand) {
+  ASSERT_EQ(Run("mkdir a"), "");
+  ASSERT_EQ(Run("mkdir b"), "");
+
+  EXPECT_EQ(Run("pwd > p.txt"), "");
+  EXPECT_EQ(Run("cat p.txt"), "/\n");
+
+  // ls runs before its output is written, so l.txt isn't in its own listing
+  EXPECT_EQ(Run("ls > l.txt"), "");
+  EXPECT_EQ(Run("cat l.txt"), "a/\nb/\np.txt\n");
+
+  // cat + redirect copies a file
+  EXPECT_EQ(Run("cat p.txt > copy.txt"), "");
+  EXPECT_EQ(Run("cat copy.txt"), "/\n");
+}
+
+TEST_F(ShellTest, RedirectTargetIsResolvedFromTheCurrentFolder) {
+  ASSERT_EQ(Run("mkdir a"), "");
+  ASSERT_EQ(Run("cd a"), "");
+  EXPECT_EQ(Run("echo x > ../top.txt"), "");
+  EXPECT_EQ(Run("echo y > here.txt"), "");
+  EXPECT_EQ(Run("cat /top.txt"), "x\n");
+  EXPECT_EQ(Run("cat /a/here.txt"), "y\n");
+}
+
+TEST_F(ShellTest, FailedCommandLeavesTheRedirectTargetAlone) {
+  ASSERT_EQ(Run("echo old > t.txt"), "");
+  EXPECT_EQ(Run("cat nope > t.txt"), "cat: No such file or directory\n");
+  EXPECT_EQ(Run("cat t.txt"), "old\n");
+
+  EXPECT_EQ(Run("ls nope > new.txt"), "ls: No such file or directory\n");
+  EXPECT_EQ(Run("ls"), "t.txt\n");  // new.txt was never created
+}
+
+TEST_F(ShellTest, BadRedirectTargetReportsTheTarget) {
+  ASSERT_EQ(Run("mkdir d"), "");
+  EXPECT_EQ(Run("echo hi > d"), "kernel: d: Is a directory\n");
+  EXPECT_EQ(Run("echo hi > nope/x.txt"), "kernel: nope/x.txt: No such file or directory\n");
+  EXPECT_EQ(Run("ls"), "d/\n");
+}
+
+TEST_F(ShellTest, RedirectRespectsTheFileSizeLimit) {
+  const std::string big(Config::MAX_FILE_SIZE_BYTES + 1, 'x');
+  EXPECT_EQ(Run("echo " + big + " > big.txt"), "kernel: big.txt: File too large\n");
+  EXPECT_EQ(Run("ls"), "");
+}
+
+// rm / mv
+
+TEST_F(ShellTest, RmFilesAndFolders) {
+  ASSERT_EQ(Run("touch f.txt"), "");
+  ASSERT_EQ(Run("mkdir d"), "");
+  ASSERT_EQ(Run("touch d/inside.txt"), "");
+  ASSERT_EQ(Run("mkdir e"), "");
+
+  EXPECT_EQ(Run("rm f.txt"), "");
+  EXPECT_EQ(Run("rm d"), "rm: Is a directory\n");
+  EXPECT_EQ(Run("rm -r d"), "");
+  EXPECT_EQ(Run("rm e -r"), "");  // flag after the path also works
+  EXPECT_EQ(Run("ls"), "");
+}
+
+TEST_F(ShellTest, RmErrors) {
+  ASSERT_EQ(Run("touch a.txt"), "");
+  EXPECT_EQ(Run("rm nope"), "rm: No such file or directory\n");
+  EXPECT_EQ(Run("rm"), "rm: usage: rm [-r] <path>\n");
+  EXPECT_EQ(Run("rm -r"), "rm: No such file or directory\n");
+  EXPECT_EQ(Run("rm -f a.txt"), "rm: usage: rm [-r] <path>\n");
+  EXPECT_EQ(Run("rm a.txt b.txt"), "rm: usage: rm [-r] <path>\n");
+  EXPECT_EQ(Run("rm /"), "rm: Permission denied\n");  // root check comes first
+  EXPECT_EQ(Run("rm -r /"), "rm: Permission denied\n");
+  EXPECT_EQ(Run("ls"), "a.txt\n");
+}
+
+TEST_F(ShellTest, MvRenamesAndMoves) {
+  ASSERT_EQ(Run("echo data > x.txt"), "");
+  ASSERT_EQ(Run("mkdir m"), "");
+
+  EXPECT_EQ(Run("mv x.txt y.txt"), "");
+  EXPECT_EQ(Run("mv y.txt m"), "");
+  EXPECT_EQ(Run("ls"), "m/\n");
+  EXPECT_EQ(Run("cat m/y.txt"), "data\n");
+}
+
+TEST_F(ShellTest, MvErrors) {
+  EXPECT_EQ(Run("mv"), "mv: usage: mv <source> <dest>\n");
+  EXPECT_EQ(Run("mv a"), "mv: usage: mv <source> <dest>\n");
+  EXPECT_EQ(Run("mv a b c"), "mv: usage: mv <source> <dest>\n");
+  EXPECT_EQ(Run("mv nope x"), "mv: No such file or directory\n");
+}
+
+// help
+
+TEST_F(ShellTest, HelpListsEveryCommandAlphabeticallyPlusExit) {
+  EXPECT_EQ(Run("help"),
+            "cat <path>\n"
+            "cd <path>\n"
+            "echo [text...]\n"
+            "help\n"
+            "ls [path]\n"
+            "mkdir <path>\n"
+            "mv <source> <dest>\n"
+            "pwd\n"
+            "rm [-r] <path>\n"
+            "touch <path>\n"
+            "exit\n");
+}
