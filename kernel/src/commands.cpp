@@ -1,5 +1,5 @@
 #include "commands.h"
-#include <unordered_map>
+#include <map>
 
 namespace {
 
@@ -51,16 +51,65 @@ Status echo(FileSystem &, const Args &args, std::string &out) {
   return Status::Ok;
 }
 
-// TODO: add the other commands here
+Status touch(FileSystem &fs, const Args &args, std::string &) {
+  if (args.size() != 2) {
+    return Status::InvalidArguments;
+  }
+  return fs.touch(args[1]);
+}
 
-const std::unordered_map<std::string, CommandInfo> commands = {
+Status cat(FileSystem &fs, const Args &args, std::string &out) {
+  if (args.size() != 2) {
+    return Status::InvalidArguments;
+  }
+  return fs.cat(args[1], out);
+}
+
+Status rm(FileSystem &fs, const Args &args, std::string &) {
+  if (args.size() == 2) {
+    return fs.rm(args[1], false);
+  }
+  if (args.size() == 3) {
+    if (!(args[1] == "-r" || args[2] == "-r")) {
+      return Status::InvalidArguments;
+    }
+    const std::string &path = (args[1] == "-r") ? args[2] : args[1];
+    return fs.rm(path, true);
+  }
+  return Status::InvalidArguments;
+}
+
+Status mv(FileSystem &fs, const Args &args, std::string &) {
+  if (args.size() != 3) {
+    return Status::InvalidArguments;
+  }
+  return fs.mv(args[1], args[2]);
+}
+
+// define "help" signature here so we can have it in the table
+Status help(FileSystem &, const Args &, std::string &);
+
+const std::map<std::string, CommandInfo> commands = {
     {"pwd", {"pwd", pwd}},
     {"cd", {"cd <path>", cd}},
     {"ls", {"ls [path]", ls}},
     {"mkdir", {"mkdir <path>", mkdir}},
     {"echo", {"echo [text...]", echo}},
-    // TODO: add commands to map
-};
+    {"rm", {"rm [-r] <path>", rm}},
+    {"mv", {"mv <source> <dest>", mv}},
+    {"touch", {"touch <path>", touch}},
+    {"cat", {"cat <path>", cat}},
+    {"help", {"help", help}}};
+
+// help body defined here (definition - declaration)
+Status help(FileSystem &, const Args &, std::string &out) {
+  for (const auto &cmd : commands) {
+    out += cmd.second.usage;
+    out += "\n";
+  }
+  out += "exit\n";
+  return Status::Ok;
+}
 
 } // namespace
 

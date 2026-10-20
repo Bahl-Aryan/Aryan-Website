@@ -119,7 +119,7 @@ std::string Shell::convertStatus(Status status) {
   case Status::NotADirectory:
     return "Not a directory";
   case Status::NotAFile:
-    return "Not a file";
+    return "Is a directory";
   case Status::AlreadyExists:
     return "Object already exists";
   case Status::InvalidName:
