@@ -9,46 +9,9 @@
 
 #include "config.h"
 #include "fs.h"
+#include "test_helpers.h"
 
 using Names = std::vector<std::string>;
-
-// Lets GoogleTest print Status values by name in failure messages
-// (otherwise an enum class prints as raw bytes).
-void PrintTo(Status s, std::ostream *os) {
-  switch (s) {
-  case Status::Ok:
-    *os << "Ok";
-    return;
-  case Status::NotFound:
-    *os << "NotFound";
-    return;
-  case Status::NotADirectory:
-    *os << "NotADirectory";
-    return;
-  case Status::NotAFile:
-    *os << "NotAFile";
-    return;
-  case Status::AlreadyExists:
-    *os << "AlreadyExists";
-    return;
-  case Status::InvalidName:
-    *os << "InvalidName";
-    return;
-  case Status::InvalidArguments:
-    *os << "InvalidArguments";
-    return;
-  case Status::PermissionDenied:
-    *os << "PermissionDenied";
-    return;
-  case Status::MaxDepthReached:
-    *os << "MaxDepthReached";
-    return;
-  case Status::MaxFileSizeReached:
-    *os << "MaxFileSizeReached";
-    return;
-  }
-  *os << "Status(" << static_cast<int>(s) << ")";
-}
 
 // Base fixture: a fresh FileSystem plus helpers for reading state back.
 class FsTest : public ::testing::Test {
